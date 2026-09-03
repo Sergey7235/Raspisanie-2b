@@ -709,22 +709,53 @@
             }
         });
 
-        // ============================================================
-        // 9. ПОГОДА (Тюмень) — бесплатное API wttr.in
-        // ============================================================
-        async function fetchWeather() {
-            try {
-                const res = await fetch('https://wttr.in/Tyumen?format=%C+%t&lang=ru');
-                const text = await res.text();
-                // Пример ответа: "Ясно +18°C"
-                document.getElementById('weatherDisplay').textContent = '🌤️ Тюмень: ' + text.trim();
-            } catch (e) {
-                document.getElementById('weatherDisplay').textContent = '🌤️ Тюмень: --°C';
-            }
+// ============================================================
+// 9. ПОГОДА (Тюмень) — через wttr.in с правильным форматом
+// ============================================================
+async function fetchWeather() {
+    const weatherEl = document.getElementById('weatherDisplay');
+    try {
+        // Используем параметр format=j1 для JSON
+        const res = await fetch('https://wttr.in/Tyumen?format=j1&lang=ru');
+        
+        // Проверяем, что ответ успешный
+        if (!res.ok) throw new Error('Ошибка сети');
+        
+        const data = await res.json();
+        
+        // Проверяем, что данные есть
+        if (!data || !data.current_condition || !data.current_condition[0]) {
+            throw new Error('Нет данных о погоде');
         }
-        fetchWeather();
-        setInterval(fetchWeather, 600000); // обновление раз в 10 минут
+        
+        const temp = data.current_condition[0].temp_C;
+        const desc = data.current_condition[0].weatherDesc[0].value;
+        const icon = parseInt(data.current_condition[0].weatherCode);
+        
+        // Эмодзи по коду погоды
+        let emoji = '🌤️';
+        if (icon >= 200 && icon < 300) emoji = '⛈️';
+        else if (icon >= 300 && icon < 400) emoji = '🌧️';
+        else if (icon >= 500 && icon < 600) emoji = '🌧️';
+        else if (icon >= 600 && icon < 700) emoji = '❄️';
+        else if (icon >= 700 && icon < 800) emoji = '🌫️';
+        else if (icon === 800) emoji = '☀️';
+        else if (icon === 801) emoji = '🌤️';
+        else if (icon >= 802 && icon < 900) emoji = '☁️';
+        
+        weatherEl.textContent = `${emoji} Тюмень: ${desc}, ${temp}°C`;
+    } catch (e) {
+        // Если ошибка — показываем заглушку
+        weatherEl.textContent = '🌤️ Тюмень: --°C';
+        console.log('Ошибка погоды:', e);
+    }
+}
 
+// Загружаем сразу
+fetchWeather();
+
+// Обновляем раз в 10 минут
+setInterval(fetchWeather, 600000);
         // ============================================================
         // 10. ТАЙМЕР ДО ЗВОНКА (Тюмень)
         // ============================================================
