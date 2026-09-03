@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>2Б Расписание</title>
     <style>
+        /* --- БАЗА --- */
         * {
             margin: 0;
             padding: 0;
@@ -12,11 +13,59 @@
         }
         body {
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: #0f172a;
-            color: #fff;
             padding: 16px 12px 30px;
             min-height: 100vh;
+            transition: background 0.4s, color 0.4s;
         }
+
+        /* --- ТЕМЫ --- */
+        body.light {
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+        body.dark {
+            background: #0f172a;
+            color: #f1f5f9;
+        }
+
+        /* --- ПАНЕЛЬ УПРАВЛЕНИЯ --- */
+        .control-bar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .control-btn {
+            background: rgba(255,255,255,0.08);
+            border: none;
+            border-radius: 40px;
+            padding: 8px 14px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: inherit;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            backdrop-filter: blur(4px);
+        }
+        .control-btn:hover {
+            background: rgba(255,255,255,0.2);
+            transform: scale(1.02);
+        }
+        .control-btn:active {
+            transform: scale(0.94);
+        }
+        body.light .control-btn {
+            background: rgba(0,0,0,0.06);
+        }
+        body.light .control-btn:hover {
+            background: rgba(0,0,0,0.12);
+        }
+
+        /* --- ШАПКА --- */
         .header {
             text-align: center;
             padding: 20px 0 12px;
@@ -36,6 +85,9 @@
             font-size: 0.9rem;
             margin-top: 4px;
         }
+        body.light .header p {
+            color: #475569;
+        }
         .today-badge {
             display: inline-block;
             background: #f43f5e;
@@ -44,7 +96,10 @@
             font-size: 0.7rem;
             font-weight: 700;
             margin-top: 6px;
+            color: #fff;
         }
+
+        /* --- ДНИ --- */
         .day-tabs {
             display: flex;
             gap: 8px;
@@ -66,23 +121,32 @@
             transition: 0.2s;
             white-space: nowrap;
         }
+        body.light .day-btn {
+            background: #e2e8f0;
+            color: #475569;
+        }
         .day-btn.active {
             background: #fbbf24;
             color: #0f172a;
             box-shadow: 0 0 24px rgba(251, 191, 36, 0.3);
         }
+        body.light .day-btn.active {
+            box-shadow: 0 0 24px rgba(251, 191, 36, 0.4);
+        }
         .day-btn:active { transform: scale(0.94); }
+
+        /* --- КАРТОЧКИ УРОКОВ --- */
         .schedule-card {
             display: none;
-            animation: fadeUp 0.3s ease;
+            animation: fadeUp 0.35s ease;
         }
         .schedule-card.active { display: block; }
         @keyframes fadeUp {
-            0% { opacity: 0; transform: translateY(20px); }
+            0% { opacity: 0; transform: translateY(24px); }
             100% { opacity: 1; transform: translateY(0); }
         }
+
         .lesson-item {
-            background: #1e293b;
             border-radius: 18px;
             padding: 16px 20px;
             margin-bottom: 10px;
@@ -90,30 +154,48 @@
             align-items: center;
             gap: 14px;
             border-left: 6px solid #fbbf24;
-            transition: 0.15s;
+            transition: 0.2s;
             cursor: pointer;
+            background: #1e293b;
+        }
+        body.light .lesson-item {
+            background: #ffffff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         }
         .lesson-item:active {
             transform: scale(0.97);
             background: #2d3a4f;
         }
+        body.light .lesson-item:active {
+            background: #f1f5f9;
+        }
+
         .lesson-icon { font-size: 1.8rem; width: 44px; text-align: center; flex-shrink: 0; }
         .lesson-info { flex: 1; }
         .lesson-name { font-size: 1.1rem; font-weight: 700; letter-spacing: 0.3px; }
         .lesson-sub { font-size: 0.7rem; color: #94a3b8; margin-top: 2px; font-weight: 500; }
+
+        /* --- ПОДСКАЗКА --- */
         .tooltip-box {
             margin-top: 20px;
-            background: #1e293b;
             border-radius: 18px;
             padding: 18px 20px;
             border-left: 6px solid #f43f5e;
             font-size: 0.95rem;
             line-height: 1.5;
-            color: #cbd5e1;
             min-height: 70px;
-            transition: 0.2s;
+            transition: 0.3s;
+            background: #1e293b;
+            color: #cbd5e1;
+        }
+        body.light .tooltip-box {
+            background: #ffffff;
+            color: #1e293b;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         }
         .tooltip-box span { color: #fbbf24; font-weight: 700; }
+
+        /* --- ФУТЕР --- */
         .footer {
             text-align: center;
             margin-top: 30px;
@@ -121,7 +203,8 @@
             font-size: 0.7rem;
             letter-spacing: 1px;
         }
-        /* Цвета */
+
+        /* --- ЦВЕТА УРОКОВ (бордеры) --- */
         .math { border-color: #f87171; }
         .rus { border-color: #60a5fa; }
         .lit { border-color: #fbbf24; }
@@ -135,9 +218,29 @@
         .talk { border-color: #f87171; }
         .extra { border-color: #fbbf24; }
         .circle { border-color: #e879f9; }
+
+        /* --- СВЕТЛАЯ ТЕМА: БОРДЕРЫ СДЕЛАЕМ НАСЫЩЕННЕЕ --- */
+        body.light .math { border-color: #dc2626; }
+        body.light .rus { border-color: #2563eb; }
+        body.light .lit { border-color: #d97706; }
+        body.light .eng { border-color: #059669; }
+        body.light .world { border-color: #16a34a; }
+        body.light .phys { border-color: #db2777; }
+        body.light .music { border-color: #7c3aed; }
+        body.light .izo { border-color: #db2777; }
+        body.light .tech { border-color: #ea580c; }
+        body.light .sense { border-color: #0891b2; }
+        body.light .talk { border-color: #dc2626; }
+        body.light .extra { border-color: #d97706; }
+        body.light .circle { border-color: #a855f7; }
     </style>
 </head>
-<body>
+<body class="dark">
+    <div class="control-bar">
+        <button class="control-btn" id="themeToggle">🌙 Тема</button>
+        <button class="control-btn" id="fullscreenToggle">⛶ На весь</button>
+    </div>
+
     <div class="header">
         <h1>🌟 2Б РАСПИСАНИЕ</h1>
         <p>Учись и улыбайся!</p>
@@ -161,6 +264,7 @@
     <div class="footer">✨ Удачи, 2Б! Ты справишься! ✨</div>
 
     <script>
+        // ============ ДАННЫЕ РАСПИСАНИЯ ============
         const days = [{
             name: 'ПОНЕДЕЛЬНИК',
             lessons: [
@@ -211,12 +315,128 @@
             ]
         }];
 
+        // ============ ПОДСКАЗКИ ============
         const tipMap = {};
         days.forEach((d, di) => {
             d.lessons.forEach((l, li) => {
                 tipMap[di + '-' + li] = l.tip;
             });
         });
+
+        // ============ ОТРИСОВКА ДНЯ ============
+        const container = document.getElementById('scheduleContainer');
+        function renderDay(index) {
+            const day = days[index];
+            let html = `<div class="schedule-card active">`;
+            day.lessons.forEach((lesson, i) => {
+                const tag = lesson.name.includes('платная') ? '⭐ ДОП' :
+                            lesson.name.includes('кружок') ? '🎯 КРУЖОК' : '';
+                html += `
+                    <div class="lesson-item ${lesson.cls}" data-day="${index}" data-idx="${i}">
+                        <div class="lesson-icon">${lesson.icon}</div>
+                        <div class="lesson-info">
+                            <div class="lesson-name">${lesson.name}</div>
+                            ${tag ? `<div class="lesson-sub">${tag}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+            container.innerHTML = html;
+
+            document.querySelectorAll('.lesson-item').forEach(el => {
+                el.addEventListener('click', function() {
+                    const day = parseInt(this.dataset.day);
+                    const idx = parseInt(this.dataset.idx);
+                    const tip = tipMap[day + '-' + idx] || 'Будь молодцом!';
+                    const name = days[day].lessons[idx].name;
+                    document.getElementById('tooltip').innerHTML = `
+                        <span>💡</span> <strong>${name}</strong> — ${tip}
+                    `;
+                });
+            });
+        }
+
+        // ============ ПЕРЕКЛЮЧЕНИЕ ДНЕЙ ============
+        const dayBtns = document.querySelectorAll('.day-btn');
+        let currentDay = 0;
+
+        function setDay(index) {
+            currentDay = index;
+            dayBtns.forEach((btn, i) => btn.classList.toggle('active', i === index));
+            renderDay(index);
+            const today = new Date().getDay();
+            const weekdays = [1,2,3,4,5,6,0];
+            document.getElementById('todayBadge').textContent =
+                weekdays[today] === index ? '📅 СЕГОДНЯ' : '📅 ' + days[index].name;
+        }
+
+        dayBtns.forEach((btn, i) => btn.addEventListener('click', () => setDay(i)));
+
+        // ============ АВТО-ВЫБОР ДНЯ ============
+        const today = new Date().getDay();
+        const weekdays = [1,2,3,4,5,6,0];
+        let todayIndex = weekdays.indexOf(today);
+        if (todayIndex === -1 || todayIndex > 4) todayIndex = 0;
+        setDay(todayIndex);
+
+        // ============ СВАЙП ============
+        let startX = 0;
+        container.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; });
+        container.addEventListener('touchend', (e) => {
+            const diff = startX - e.changedTouches[0].clientX;
+            if (Math.abs(diff) > 50) {
+                if (diff > 0 && currentDay < 4) setDay(currentDay + 1);
+                else if (diff < 0 && currentDay > 0) setDay(currentDay - 1);
+            }
+        });
+
+        // ============ ТЕМА (СВЕТЛАЯ / ТЁМНАЯ) ============
+        const themeBtn = document.getElementById('themeToggle');
+        let isDark = true;
+
+        themeBtn.addEventListener('click', () => {
+            isDark = !isDark;
+            document.body.className = isDark ? 'dark' : 'light';
+            themeBtn.textContent = isDark ? '🌙 Тема' : '☀️ Тема';
+            // сохраним выбор пользователя
+            try {
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            } catch(e) {}
+        });
+
+        // загружаем сохранённую тему
+        try {
+            const saved = localStorage.getItem('theme');
+            if (saved === 'light') {
+                isDark = false;
+                document.body.className = 'light';
+                themeBtn.textContent = '☀️ Тема';
+            }
+        } catch(e) {}
+
+        // ============ ПОЛНЫЙ ЭКРАН ============
+        const fsBtn = document.getElementById('fullscreenToggle');
+
+        fsBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    // если браузер не поддерживает — просто игнорируем
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        });
+
+        // меняем текст кнопки при смене состояния
+        document.addEventListener('fullscreenchange', () => {
+            fsBtn.textContent = document.fullscreenElement ? '⛶ Сжать' : '⛶ На весь';
+        });
+    </script>
+</body>
+</html>        });
 
         const container = document.getElementById('scheduleContainer');
         function renderDay(index) {
