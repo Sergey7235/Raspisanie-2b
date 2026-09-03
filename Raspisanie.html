@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>2Б Расписание</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0f172a;
+            color: #fff;
+            padding: 16px 12px 30px;
+            min-height: 100vh;
+        }
+        .header {
+            text-align: center;
+            padding: 20px 0 12px;
+            border-bottom: 2px dashed #fbbf24;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, #38bdf8, #fbbf24, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 2px;
+        }
+        .header p {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+        .today-badge {
+            display: inline-block;
+            background: #f43f5e;
+            padding: 4px 14px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-top: 6px;
+        }
+        .day-tabs {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 4px 0 16px;
+            scrollbar-width: none;
+        }
+        .day-tabs::-webkit-scrollbar { display: none; }
+        .day-btn {
+            flex: 0 0 auto;
+            padding: 10px 18px;
+            border-radius: 40px;
+            border: none;
+            background: #1e293b;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+        .day-btn.active {
+            background: #fbbf24;
+            color: #0f172a;
+            box-shadow: 0 0 24px rgba(251, 191, 36, 0.3);
+        }
+        .day-btn:active { transform: scale(0.94); }
+        .schedule-card {
+            display: none;
+            animation: fadeUp 0.3s ease;
+        }
+        .schedule-card.active { display: block; }
+        @keyframes fadeUp {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .lesson-item {
+            background: #1e293b;
+            border-radius: 18px;
+            padding: 16px 20px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            border-left: 6px solid #fbbf24;
+            transition: 0.15s;
+            cursor: pointer;
+        }
+        .lesson-item:active {
+            transform: scale(0.97);
+            background: #2d3a4f;
+        }
+        .lesson-icon { font-size: 1.8rem; width: 44px; text-align: center; flex-shrink: 0; }
+        .lesson-info { flex: 1; }
+        .lesson-name { font-size: 1.1rem; font-weight: 700; letter-spacing: 0.3px; }
+        .lesson-sub { font-size: 0.7rem; color: #94a3b8; margin-top: 2px; font-weight: 500; }
+        .tooltip-box {
+            margin-top: 20px;
+            background: #1e293b;
+            border-radius: 18px;
+            padding: 18px 20px;
+            border-left: 6px solid #f43f5e;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #cbd5e1;
+            min-height: 70px;
+            transition: 0.2s;
+        }
+        .tooltip-box span { color: #fbbf24; font-weight: 700; }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #475569;
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+        }
+        /* Цвета */
+        .math { border-color: #f87171; }
+        .rus { border-color: #60a5fa; }
+        .lit { border-color: #fbbf24; }
+        .eng { border-color: #34d399; }
+        .world { border-color: #6ee7b7; }
+        .phys { border-color: #f472b6; }
+        .music { border-color: #a78bfa; }
+        .izo { border-color: #f472b6; }
+        .tech { border-color: #fb923c; }
+        .sense { border-color: #22d3ee; }
+        .talk { border-color: #f87171; }
+        .extra { border-color: #fbbf24; }
+        .circle { border-color: #e879f9; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🌟 2Б РАСПИСАНИЕ</h1>
+        <p>Учись и улыбайся!</p>
+        <div class="today-badge" id="todayBadge">📅 СЕГОДНЯ</div>
+    </div>
+
+    <div class="day-tabs" id="dayTabs">
+        <button class="day-btn active" data-day="0">ПН</button>
+        <button class="day-btn" data-day="1">ВТ</button>
+        <button class="day-btn" data-day="2">СР</button>
+        <button class="day-btn" data-day="3">ЧТ</button>
+        <button class="day-btn" data-day="4">ПТ</button>
+    </div>
+
+    <div id="scheduleContainer"></div>
+
+    <div class="tooltip-box" id="tooltip">
+        <span>👆</span> Нажми на урок — узнаешь секрет!
+    </div>
+
+    <div class="footer">✨ Удачи, 2Б! Ты справишься! ✨</div>
+
+    <script>
+        const days = [{
+            name: 'ПОНЕДЕЛЬНИК',
+            lessons: [
+                { name: 'Занимательная математика (кружок)', icon: '🧮', cls: 'circle', tip: 'Играем в числа! Будет весело, как в квесте.' },
+                { name: 'Разговоры о важном', icon: '🗣️', cls: 'talk', tip: 'Говорим о дружбе и мечтах. Можно даже пофантазировать!' },
+                { name: 'Математика', icon: '📐', cls: 'math', tip: 'Чертим фигуры и считаем. Ты сможешь!' },
+                { name: 'Английский язык', icon: '🇬🇧', cls: 'eng', tip: 'Новые слова! Повторяй за учителем — будет классно.' },
+                { name: 'Русский язык', icon: '✍️', cls: 'rus', tip: 'Пишем красиво и грамотно. Ты почти писатель!' },
+                { name: 'Музыка', icon: '🎵', cls: 'music', tip: 'Поём и танцуем! Даже если не в ритм — главное радость.' }
+            ]
+        }, {
+            name: 'ВТОРНИК',
+            lessons: [
+                { name: 'Физическая культура', icon: '🏃', cls: 'phys', tip: 'Бегай, прыгай, играй! Не забудь воду и форму.' },
+                { name: 'Литературное чтение', icon: '📖', cls: 'lit', tip: 'Читаем сказки. Представь, что ты герой книги!' },
+                { name: 'Математика', icon: '📐', cls: 'math', tip: 'Учим таблицу умножения. Это как магия чисел!' },
+                { name: 'Русский язык', icon: '✍️', cls: 'rus', tip: 'Разбираем слова. Ты уже почти эксперт!' },
+                { name: 'Окружающий мир', icon: '🌍', cls: 'world', tip: 'Узнаём о животных. Кто живёт в лесу?' },
+                { name: 'Дополнительная математика (платная)', icon: '💰', cls: 'extra', tip: 'Решаем сложные задачки. Ты же умник!' }
+            ]
+        }, {
+            name: 'СРЕДА',
+            lessons: [
+                { name: 'Английский язык', icon: '🇬🇧', cls: 'eng', tip: 'Учим слова про еду и игры. Yummy!' },
+                { name: 'Математика', icon: '📐', cls: 'math', tip: 'Ищем неизвестное, как сыщики.' },
+                { name: 'Русский язык', icon: '✍️', cls: 'rus', tip: 'Падежи — не страшно. Повторим и запомним.' },
+                { name: 'Литературное чтение', icon: '📖', cls: 'lit', tip: 'Читаем стихи. Попробуй прочитать с выражением!' },
+                { name: 'ИЗО', icon: '🎨', cls: 'izo', tip: 'Рисуй что хочешь. Даже если не похоже — это искусство!' },
+                { name: 'Дополнительная математика (платная)', icon: '💰', cls: 'extra', tip: 'Логические задачки — для настоящих гениев.' }
+            ]
+        }, {
+            name: 'ЧЕТВЕРГ',
+            lessons: [
+                { name: 'Окружающий мир', icon: '🌍', cls: 'world', tip: 'Планета Земля — наш дом. Береги её!' },
+                { name: 'Русский язык', icon: '✍️', cls: 'rus', tip: 'Сочиняем историю. Кто твой главный герой?' },
+                { name: 'Физическая культура', icon: '🏃', cls: 'phys', tip: 'Спортивные игры — лови мяч и беги!' },
+                { name: 'Литературное чтение', icon: '📖', cls: 'lit', tip: 'Сказки разных народов. Узнай новое!' },
+                { name: 'Технология', icon: '🔧', cls: 'tech', tip: 'Лепим, клеим, мастерим. Твори как художник!' }
+            ]
+        }, {
+            name: 'ПЯТНИЦА',
+            lessons: [
+                { name: 'Литературное чтение', icon: '📖', cls: 'lit', tip: 'Дочитываем книгу до конца. Как тебе финал?' },
+                { name: 'Математика', icon: '📐', cls: 'math', tip: 'Решай спокойно. Ты всё знаешь!' },
+                { name: 'Русский язык', icon: '✍️', cls: 'rus', tip: 'Глаголы — наши друзья. Пиши уверенно.' },
+                { name: 'Смысловое чтение', icon: '🤔', cls: 'sense', tip: 'Читай и думай. Задавай вопросы — это круто!' },
+                { name: 'Дополнительная математика (платная)', icon: '💰', cls: 'extra', tip: 'Финальная битва с задачками. Ты победишь!' }
+            ]
+        }];
+
+        const tipMap = {};
+        days.forEach((d, di) => {
+            d.lessons.forEach((l, li) => {
+                tipMap[di + '-' + li] = l.tip;
+            });
+        });
+
+        const container = document.getElementById('scheduleContainer');
+        function renderDay(index) {
+            const day = days[index];
+            let html = `<div class="schedule-card active">`;
+            day.lessons.forEach((lesson, i) => {
+                const tag = lesson.name.includes('платная') ? '⭐ ДОП' :
+                            lesson.name.includes('кружок') ? '🎯 КРУЖОК' : '';
+                html += `
+                    <div class="lesson-item ${lesson.cls}" data-day="${index}" data-idx="${i}">
+                        <div class="lesson-icon">${lesson.icon}</div>
+                        <div class="lesson-info">
+                            <div class="lesson-name">${lesson.name}</div>
+                            ${tag ? `<div class="lesson-sub">${tag}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+            container.innerHTML = html;
+
+            document.querySelectorAll('.lesson-item').forEach(el => {
+                el.addEventListener('click', function() {
+                    const day = parseInt(this.dataset.day);
+                    const idx = parseInt(this.dataset.idx);
+                    const tip = tipMap[day + '-' + idx] || 'Будь молодцом!';
+                    const name = days[day].lessons[idx].name;
+                    document.getElementById('tooltip').innerHTML = `
+                        <span>💡</span> <strong>${name}</strong> — ${tip}
+                    `;
+                });
+            });
+        }
+
+        const dayBtns = document.querySelectorAll('.day-btn');
+        let currentDay = 0;
+
+        function setDay(index) {
+            currentDay = index;
+            dayBtns.forEach((btn, i) => btn.classList.toggle('active', i === index));
+            renderDay(index);
+            const today = new Date().getDay();
+            const weekdays = [1,2,3,4,5,6,0];
+            document.getElementById('todayBadge').textContent =
+                weekdays[today] === index ? '📅 СЕГОДНЯ' : '📅 ' + days[index].name;
+        }
+
+        dayBtns.forEach((btn, i) => btn.addEventListener('click', () => setDay(i)));
+
+        const today = new Date().getDay();
+        const weekdays = [1,2,3,4,5,6,0];
+        let todayIndex = weekdays.indexOf(today);
+        if (todayIndex === -1 || todayIndex > 4) todayIndex = 0;
+        setDay(todayIndex);
+
+        let startX = 0;
+        container.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; });
+        container.addEventListener('touchend', (e) => {
+            const diff = startX - e.changedTouches[0].clientX;
+            if (Math.abs(diff) > 50) {
+                if (diff > 0 && currentDay < 4) setDay(currentDay + 1);
+                else if (diff < 0 && currentDay > 0) setDay(currentDay - 1);
+            }
+        });
+    </script>
+</body>
+</html>
