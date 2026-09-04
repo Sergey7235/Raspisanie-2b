@@ -257,8 +257,7 @@
             min-height: 0;
             padding-bottom: 2px;
         }
-        .schedule-card { display: none; }
-        .schedule-card.active { display: block; }
+        .schedule-card { display: block; } /* Всегда показываем */
 
         /* --- УРОКИ --- */
         .lesson-item {
@@ -274,9 +273,6 @@
             background: rgba(255,255,255,0.8);
             backdrop-filter: blur(4px);
             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            opacity: 0;
-            transform: translateX(-16px);
-            animation: popIn 0.25s ease forwards;
             position: relative;
             overflow: hidden;
         }
@@ -285,17 +281,6 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
         .lesson-item:active { transform: scale(0.97); }
-        @keyframes popIn {
-            0% { opacity: 0; transform: translateX(-16px) scale(0.95); }
-            100% { opacity: 1; transform: translateX(0) scale(1); }
-        }
-        .lesson-item:nth-child(1) { animation-delay: 0.02s; }
-        .lesson-item:nth-child(2) { animation-delay: 0.05s; }
-        .lesson-item:nth-child(3) { animation-delay: 0.08s; }
-        .lesson-item:nth-child(4) { animation-delay: 0.11s; }
-        .lesson-item:nth-child(5) { animation-delay: 0.14s; }
-        .lesson-item:nth-child(6) { animation-delay: 0.17s; }
-        .lesson-item:nth-child(7) { animation-delay: 0.20s; }
 
         /* Обед */
         .lesson-item.lunch {
@@ -392,7 +377,7 @@
             background: rgba(255,255,255,0.05);
         }
 
-        /* --- НИЖНИЙ БЛОК ПОДНЯТ --- */
+        /* --- НИЖНИЙ БЛОК --- */
         .bottom-block {
             display: flex;
             flex-direction: column;
@@ -546,7 +531,6 @@
 
     <div id="scheduleContainer"></div>
 
-    <!-- НИЖНИЙ БЛОК ПОДНЯТ ВВЕРХ -->
     <div class="bottom-block">
         <div class="tooltip-box" id="tooltip">
             <span class="icon">👆</span>
@@ -559,7 +543,7 @@
 
     <script>
         // ============================================================
-        // 1. ДАННЫЕ РАСПИСАНИЯ
+        // 1. ДАННЫЕ
         // ============================================================
         const days = [{
             name: 'ПОНЕДЕЛЬНИК',
@@ -612,17 +596,7 @@
         }];
 
         // ============================================================
-        // 2. ПОДСКАЗКИ
-        // ============================================================
-        const tipMap = {};
-        days.forEach((day, dayIdx) => {
-            day.lessons.forEach((lesson, lessonIdx) => {
-                tipMap[dayIdx + '-' + lessonIdx] = lesson.tip;
-            });
-        });
-
-        // ============================================================
-        // 3. РАСПИСАНИЕ ЗВОНКОВ
+        // 2. РАСПИСАНИЕ ЗВОНКОВ
         // ============================================================
         const bellSchedule = [
             { start: '13:30', end: '14:10', type: 'lesson' },
@@ -635,7 +609,7 @@
         ];
 
         // ============================================================
-        // 4. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+        // 3. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
         // ============================================================
         function getTodayIndex() {
             const today = new Date().getDay();
@@ -688,21 +662,68 @@
         }
 
         // ============================================================
-        // 5. ОТРИСОВКА (ПОЛНАЯ ПЕРЕПИСЬ)
+        // 4. ГЛАВНАЯ ФУНКЦИЯ ОБНОВЛЕНИЯ (без миганий)
         // ============================================================
         const container = document.getElementById('scheduleContainer');
         const lessonCountEl = document.getElementById('lessonCount');
+        const timerEl = document.getElementById('timerValue');
+        const timerDisplay = document.getElementById('timerDisplay');
+
+        let currentDay = 0;
+        let renderedDay = -1; // чтобы перерисовывать только при смене дня
 
         function renderSchedule() {
             const dayIndex = currentDay;
             const day = days[dayIndex];
             const { currentIdx, nextIdx } = getCurrentLessonIndex();
             const now = new Date();
+            const isToday = (dayIndex === getTodayIndex());
 
-            let html = `<div class="schedule-card active">`;
+            // --- ОБНОВЛЯЕМ ТАЙМЕР (сверху) ---
+            if (currentIdx !== -1) {
+                const endTime = bellSchedule[currentIdx].end;
+                const diff = getTimeDiff(endTime, now);
+                if (diff > 0) {
+                    timerEl.textContent = formatTime(diff);
+                    timerEl.style.color = '#f43f5e';
+                    timerDisplay.innerHTML = `⏱️ До звонка: <span class="time" style="color:#f43f5e">${timerEl.textContent}</span>`;
+                } else {
+                    timerEl.textContent = '0:00';
+                    timerEl.style.color = '#f43f5e';
+                    timerDisplay.innerHTML = `⏱️ До звонка: <span class="time" style="color:#f43f5e">0:00</span>`;
+                }
+            } else if (nextIdx !== -1) {
+                const startTime = bellSchedule[nextIdx].start;
+                const diff = getTimeDiff(startTime, now);
+                if (diff > 0) {
+                    timerEl.textContent = formatTime(diff);
+                    timerEl.style.color = '#34d399';
+                    timerDisplay.innerHTML = `⏱️ До урока: <span class="time" style="color:#34d399">${timerEl.textContent}</span>`;
+                } else {
+                    timerEl.textContent = '0:00';
+                    timerEl.style.color = '#34d399';
+                    timerDisplay.innerHTML = `⏱️ До урока: <span class="time" style="color:#34d399">0:00</span>`;
+                }
+            } else {
+                timerEl.textContent = '🎉';
+                timerEl.style.color = '#94a3b8';
+                timerDisplay.innerHTML = `⏱️ Уроки закончились! <span class="time" style="color:#94a3b8">🎉</span>`;
+            }
+
+            // --- ОБНОВЛЯЕМ РАСПИСАНИЕ (только если изменился день) ---
+            if (dayIndex === renderedDay) {
+                // Обновляем только динамические элементы (прогресс-бары и таймеры на плашках)
+                updateDynamicElements(currentIdx, now);
+                return;
+            }
+
+            renderedDay = dayIndex;
+
+            // --- ПОЛНАЯ ПЕРЕРИСОВКА (при смене дня) ---
+            let html = '';
 
             // --- СЕЙЧАС ПЕРЕМЕНА ИЛИ ОБЕД (если ничего не идёт) ---
-            if (currentIdx === -1 && nextIdx !== -1 && dayIndex === getTodayIndex()) {
+            if (currentIdx === -1 && nextIdx !== -1 && isToday) {
                 const nextLesson = bellSchedule[nextIdx];
                 const timeLeft = getTimeDiff(nextLesson.start, now);
                 const mins = Math.floor(timeLeft / 60);
@@ -731,8 +752,8 @@
 
                 if (isLunchSlot) {
                     // --- ОБЕД ---
-                    const isCurrent = (dayIndex === getTodayIndex() && i === currentIdx);
-                    const isNext = (dayIndex === getTodayIndex() && i === nextIdx);
+                    const isCurrent = (isToday && i === currentIdx);
+                    const isNext = (isToday && i === nextIdx);
                     const timeRange = `${slot.start} – ${slot.end}`;
 
                     let progress = 0;
@@ -783,7 +804,7 @@
                             lesson.name.includes('кружок') ? '🎯 КРУЖОК' : '';
                 const num = lessonIndex;
 
-                const isCurrent = (dayIndex === getTodayIndex() && i === currentIdx);
+                const isCurrent = (isToday && i === currentIdx);
 
                 let progress = 0;
                 let timeLeftStr = '';
@@ -824,7 +845,6 @@
                 `;
             }
 
-            html += `</div>`;
             container.innerHTML = html;
 
             const totalLessons = day.lessons.length;
@@ -835,7 +855,7 @@
                 el.addEventListener('click', function() {
                     const dayIdx = parseInt(this.dataset.day);
                     const lessonIdx = parseInt(this.dataset.lessonIndex);
-                    const tip = tipMap[dayIdx + '-' + lessonIdx] || 'Будь молодцом!';
+                    const tip = days[dayIdx].lessons[lessonIdx].tip || 'Будь молодцом!';
                     const name = days[dayIdx].lessons[lessonIdx].name;
                     document.querySelector('.tooltip-box .text').innerHTML =
                         `<strong>${name}</strong> — ${tip}`;
@@ -845,54 +865,99 @@
         }
 
         // ============================================================
-        // 6. ТАЙМЕР (тикает каждую секунду)
+        // 5. ОБНОВЛЕНИЕ ДИНАМИЧЕСКИХ ЭЛЕМЕНТОВ (без перерисовки)
         // ============================================================
-        function updateTimer() {
-            const now = new Date();
-            const { currentIdx, nextIdx } = getCurrentLessonIndex();
-            const timerEl = document.getElementById('timerValue');
-            const timerDisplay = document.getElementById('timerDisplay');
+        function updateDynamicElements(currentIdx, now) {
+            const isToday = (currentDay === getTodayIndex());
+            if (!isToday) return;
 
-            if (currentIdx !== -1) {
-                const endTime = bellSchedule[currentIdx].end;
-                const diff = getTimeDiff(endTime, now);
-                if (diff > 0) {
-                    timerEl.textContent = formatTime(diff);
-                    timerEl.style.color = '#f43f5e';
-                    timerDisplay.innerHTML = `⏱️ До звонка: <span class="time" style="color:#f43f5e">${timerEl.textContent}</span>`;
-                } else {
-                    timerEl.textContent = '0:00';
-                    timerEl.style.color = '#f43f5e';
-                    timerDisplay.innerHTML = `⏱️ До звонка: <span class="time" style="color:#f43f5e">0:00</span>`;
+            const items = container.querySelectorAll('.lesson-item');
+            let lessonIndex = 0;
+            let itemIndex = 0;
+
+            // Пропускаем первый элемент, если это "Перемена" или "Обед"
+            if (items.length > 0) {
+                const firstItem = items[0];
+                if (firstItem.querySelector('.lesson-name')?.textContent.includes('Перемена') ||
+                    firstItem.querySelector('.lesson-name')?.textContent.includes('Обед')) {
+                    itemIndex = 1;
                 }
-            } else if (nextIdx !== -1) {
-                const startTime = bellSchedule[nextIdx].start;
-                const diff = getTimeDiff(startTime, now);
-                if (diff > 0) {
-                    timerEl.textContent = formatTime(diff);
-                    timerEl.style.color = '#34d399';
-                    timerDisplay.innerHTML = `⏱️ До урока: <span class="time" style="color:#34d399">${timerEl.textContent}</span>`;
-                } else {
-                    timerEl.textContent = '0:00';
-                    timerEl.style.color = '#34d399';
-                    timerDisplay.innerHTML = `⏱️ До урока: <span class="time" style="color:#34d399">0:00</span>`;
+            }
+
+            for (let i = 0; i < bellSchedule.length; i++) {
+                const slot = bellSchedule[i];
+                if (slot.type === 'lunch') {
+                    // Обновляем обед, если он есть
+                    if (itemIndex < items.length) {
+                        const el = items[itemIndex];
+                        if (el.classList.contains('lunch') && i === currentIdx) {
+                            const progressBar = el.querySelector('.lesson-progress');
+                            if (progressBar) {
+                                const total = getTimeDiff(slot.end, new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0)) -
+                                             getTimeDiff(slot.start, new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0));
+                                const elapsed = getTimeDiff(slot.start, now);
+                                if (total > 0) {
+                                    const progress = Math.min((elapsed / total) * 100, 100);
+                                    progressBar.style.width = progress + '%';
+                                }
+                            }
+                            const timeEl = el.querySelector('.lesson-time');
+                            if (timeEl) {
+                                const left = getTimeDiff(slot.end, now);
+                                if (left > 0) {
+                                    const mins = Math.floor(left / 60);
+                                    const secs = Math.floor(left % 60);
+                                    timeEl.textContent = `⏳ ${mins}мин ${secs}сек`;
+                                } else {
+                                    timeEl.textContent = '⏳ 0мин';
+                                }
+                            }
+                        }
+                        itemIndex++;
+                    }
+                    continue;
                 }
-            } else {
-                timerEl.textContent = '🎉';
-                timerEl.style.color = '#94a3b8';
-                timerDisplay.innerHTML = `⏱️ Уроки закончились! <span class="time" style="color:#94a3b8">🎉</span>`;
+
+                // Обновляем обычный урок
+                if (itemIndex < items.length) {
+                    const el = items[itemIndex];
+                    if (i === currentIdx) {
+                        const progressBar = el.querySelector('.lesson-progress');
+                        if (progressBar) {
+                            const total = getTimeDiff(slot.end, new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0)) -
+                                         getTimeDiff(slot.start, new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0));
+                            const elapsed = getTimeDiff(slot.start, now);
+                            if (total > 0) {
+                                const progress = Math.min((elapsed / total) * 100, 100);
+                                progressBar.style.width = progress + '%';
+                            }
+                        }
+                        const timeEl = el.querySelector('.lesson-time');
+                        if (timeEl) {
+                            const left = getTimeDiff(slot.end, now);
+                            if (left > 0) {
+                                const mins = Math.floor(left / 60);
+                                const secs = Math.floor(left % 60);
+                                timeEl.textContent = `⏳ ${mins}мин ${secs}сек`;
+                            } else {
+                                timeEl.textContent = '⏳ 0мин';
+                            }
+                        }
+                    }
+                    itemIndex++;
+                }
             }
         }
 
         // ============================================================
-        // 7. ПЕРЕКЛЮЧЕНИЕ ДНЕЙ
+        // 6. ПЕРЕКЛЮЧЕНИЕ ДНЕЙ
         // ============================================================
         const dayBtns = document.querySelectorAll('.day-btn');
-        let currentDay = 0;
 
         function setDay(index) {
             currentDay = index;
             dayBtns.forEach((btn, i) => btn.classList.toggle('active', i === index));
+            renderedDay = -1; // принудительная перерисовка
             renderSchedule();
             const today = new Date().getDay();
             const weekdays = [1,2,3,4,5,6,0];
@@ -906,7 +971,7 @@
         setDay(todayIndex);
 
         // ============================================================
-        // 8. СВАЙП (горизонтальный)
+        // 7. СВАЙП (горизонтальный)
         // ============================================================
         let touchStartX = 0;
         let touchStartY = 0;
@@ -941,7 +1006,7 @@
         }, { passive: true });
 
         // ============================================================
-        // 9. ТЕМА (сохранение в localStorage)
+        // 8. ТЕМА
         // ============================================================
         const themeBtn = document.getElementById('themeToggle');
         let isLight = true;
@@ -966,7 +1031,7 @@
         });
 
         // ============================================================
-        // 10. ПОЛНЫЙ ЭКРАН
+        // 9. ПОЛНЫЙ ЭКРАН
         // ============================================================
         const fsBtn = document.getElementById('fullscreenToggle');
 
@@ -989,7 +1054,7 @@
         document.addEventListener('fullscreenchange', updateFullscreenButton);
 
         // ============================================================
-        // 11. ПОДЕЛИТЬСЯ
+        // 10. ПОДЕЛИТЬСЯ
         // ============================================================
         document.getElementById('shareBtn').addEventListener('click', () => {
             const url = window.location.href;
@@ -1012,7 +1077,7 @@
         });
 
         // ============================================================
-        // 12. ПОГОДА
+        // 11. ПОГОДА
         // ============================================================
         async function fetchWeather() {
             const weatherEl = document.getElementById('weatherDisplay');
@@ -1038,19 +1103,15 @@
         setInterval(fetchWeather, 600000);
 
         // ============================================================
-        // 13. ЗАПУСК ТАЙМЕРОВ И ОБНОВЛЕНИЙ
+        // 12. ЗАПУСК ОБНОВЛЕНИЙ
         // ============================================================
-        // Таймер тикает каждую секунду
-        updateTimer();
-        setInterval(updateTimer, 1000);
-
-        // Расписание обновляется каждые 10 секунд (для индикаторов и анимации)
+        // Обновляем каждую секунду
         setInterval(() => {
             renderSchedule();
-        }, 10000);
+        }, 1000);
 
         // ============================================================
-        // 14. PULL-TO-REFRESH
+        // 13. PULL-TO-REFRESH
         // ============================================================
         let pullStartY2 = 0;
         let pullOffset2 = 0;
@@ -1093,7 +1154,7 @@
         }, { passive: true });
 
         // ============================================================
-        // 15. ЭКСПОРТ В PDF
+        // 14. ЭКСПОРТ В PDF
         // ============================================================
         document.getElementById('exportPdf').addEventListener('click', function() {
             const element = document.getElementById('scheduleContainer');
