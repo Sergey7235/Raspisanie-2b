@@ -757,83 +757,88 @@ fetchWeather();
 // Обновляем раз в 10 минут
 setInterval(fetchWeather, 600000);
         // ============================================================
-        // 10. ТАЙМЕР ДО ЗВОНКА (Тюмень)
-        // ============================================================
-        // Расписание звонков для Тюмени (типовое)
-        const bellSchedule = [
-            { start: '08:30', end: '09:15' },
-            { start: '09:25', end: '10:10' },
-            { start: '10:20', end: '11:05' },
-            { start: '11:15', end: '12:00' },
-            { start: '12:10', end: '12:55' },
-            { start: '13:05', end: '13:50' },
-        ];
+// 10. ТАЙМЕР ДО ЗВОНКА (под ваше расписание)
+// ============================================================
 
-        function getCurrentLesson() {
-            const now = new Date();
-            const h = now.getHours().toString().padStart(2, '0');
-            const m = now.getMinutes().toString().padStart(2, '0');
-            const timeStr = h + ':' + m;
+// ⚠️ НАСТРОЙ РАСПИСАНИЕ ЗВОНКОВ ДЛЯ 2Б КЛАССА!
+// Формат: { start: '12:40', end: '13:25' } — начало и конец урока
+const bellSchedule = [
+    { start: '12:40', end: '13:25' },  // 1-й урок
+    { start: '13:35', end: '14:20' },  // 2-й урок
+    { start: '14:30', end: '15:15' },  // 3-й урок
+    { start: '15:25', end: '16:10' },  // 4-й урок
+    { start: '16:20', end: '17:05' },  // 5-й урок
+    { start: '17:15', end: '18:00' },  // 6-й урок (если есть)
+];
 
-            let current = null;
-            let next = null;
+function getCurrentLesson() {
+    const now = new Date();
+    const h = now.getHours().toString().padStart(2, '0');
+    const m = now.getMinutes().toString().padStart(2, '0');
+    const timeStr = h + ':' + m;
 
-            for (let i = 0; i < bellSchedule.length; i++) {
-                const s = bellSchedule[i].start;
-                const e = bellSchedule[i].end;
-                if (timeStr >= s && timeStr < e) {
-                    current = bellSchedule[i];
-                    next = (i + 1 < bellSchedule.length) ? bellSchedule[i + 1] : null;
-                    break;
-                }
-                if (timeStr < s) {
-                    next = bellSchedule[i];
-                    break;
-                }
-            }
+    let current = null;
+    let next = null;
 
-            return { current, next };
+    for (let i = 0; i < bellSchedule.length; i++) {
+        const s = bellSchedule[i].start;
+        const e = bellSchedule[i].end;
+        if (timeStr >= s && timeStr < e) {
+            current = bellSchedule[i];
+            next = (i + 1 < bellSchedule.length) ? bellSchedule[i + 1] : null;
+            break;
         }
-
-        function updateTimer() {
-            const now = new Date();
-            const { current, next } = getCurrentLesson();
-
-            const timerEl = document.getElementById('timerValue');
-
-            if (current) {
-                // Идёт урок — показываем время до конца
-                const endParts = current.end.split(':');
-                const endDate = new Date(now);
-                endDate.setHours(parseInt(endParts[0]), parseInt(endParts[1]), 0);
-
-                let diff = (endDate - now) / 1000; // секунды
-                if (diff < 0) diff = 0;
-                const mins = Math.floor(diff / 60);
-                const secs = Math.floor(diff % 60);
-                timerEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-                document.querySelector('.timer .time').style.color = '#f43f5e';
-            } else if (next) {
-                // Перемена — показываем время до следующего урока
-                const startParts = next.start.split(':');
-                const startDate = new Date(now);
-                startDate.setHours(parseInt(startParts[0]), parseInt(startParts[1]), 0);
-
-                let diff = (startDate - now) / 1000;
-                if (diff < 0) diff = 0;
-                const mins = Math.floor(diff / 60);
-                const secs = Math.floor(diff % 60);
-                timerEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-                document.querySelector('.timer .time').style.color = '#34d399';
-            } else {
-                // Уроков больше нет
-                timerEl.textContent = '--:--';
-                document.querySelector('.timer .time').style.color = '#94a3b8';
-            }
+        if (timeStr < s) {
+            next = bellSchedule[i];
+            break;
         }
+    }
 
-        updateTimer();
-        setInterval(updateTimer, 1000);
+    return { current, next };
+}
+
+function updateTimer() {
+    const now = new Date();
+    const { current, next } = getCurrentLesson();
+
+    const timerEl = document.getElementById('timerValue');
+
+    if (current) {
+        // Идёт урок — показываем время до конца
+        const endParts = current.end.split(':');
+        const endDate = new Date(now);
+        endDate.setHours(parseInt(endParts[0]), parseInt(endParts[1]), 0);
+
+        let diff = (endDate - now) / 1000;
+        if (diff < 0) diff = 0;
+        const mins = Math.floor(diff / 60);
+        const secs = Math.floor(diff % 60);
+        timerEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        document.querySelector('.timer .time').style.color = '#f43f5e';
+        document.querySelector('.timer').innerHTML = `⏱️ До звонка: <span class="time">${timerEl.textContent}</span>`;
+    } else if (next) {
+        // Перемена — показываем время до начала следующего урока
+        const startParts = next.start.split(':');
+        const startDate = new Date(now);
+        startDate.setHours(parseInt(startParts[0]), parseInt(startParts[1]), 0);
+
+        let diff = (startDate - now) / 1000;
+        if (diff < 0) diff = 0;
+        const mins = Math.floor(diff / 60);
+        const secs = Math.floor(diff % 60);
+        timerEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        document.querySelector('.timer .time').style.color = '#34d399';
+        document.querySelector('.timer').innerHTML = `⏱️ До урока: <span class="time">${timerEl.textContent}</span>`;
+    } else {
+        // Уроков больше нет
+        timerEl.textContent = '--:--';
+        document.querySelector('.timer .time').style.color = '#94a3b8';
+        document.querySelector('.timer').innerHTML = `⏱️ Уроки закончились! <span class="time">🎉</span>`;
+    }
+}
+
+updateTimer();
+setInterval(updateTimer, 1000);
 
         // ============================================================
         // 11. ЭКСПОРТ В PDF
