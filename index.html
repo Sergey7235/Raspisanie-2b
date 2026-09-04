@@ -612,20 +612,17 @@
         }];
 
         // ============================================================
-        // 2. ПОДСКАЗКИ (исправлено!)
+        // 2. ПОДСКАЗКИ
         // ============================================================
         const tipMap = {};
         days.forEach((day, dayIdx) => {
             day.lessons.forEach((lesson, lessonIdx) => {
-                // Ключ: день-индекс_урока_в_расписании
-                // Но нам нужен ключ по реальному порядку в расписании (с учётом обеда)
-                // Проще: сохраним по индексу урока в массиве lessons
                 tipMap[dayIdx + '-' + lessonIdx] = lesson.tip;
             });
         });
 
         // ============================================================
-        // 3. РАСПИСАНИЕ ЗВОНКОВ (с ОБЕДОМ)
+        // 3. РАСПИСАНИЕ ЗВОНКОВ
         // ============================================================
         const bellSchedule = [
             { start: '13:30', end: '14:10', type: 'lesson' },
@@ -691,7 +688,7 @@
         }
 
         // ============================================================
-        // 5. ОТРИСОВКА (ВСЯ ЛОГИКА ТУТ)
+        // 5. ОТРИСОВКА (ПОЛНАЯ ПЕРЕПИСЬ)
         // ============================================================
         const container = document.getElementById('scheduleContainer');
         const lessonCountEl = document.getElementById('lessonCount');
@@ -704,7 +701,7 @@
 
             let html = `<div class="schedule-card active">`;
 
-            // --- СЕЙЧАС ПЕРЕМЕНА ИЛИ ОБЕД ---
+            // --- СЕЙЧАС ПЕРЕМЕНА ИЛИ ОБЕД (если ничего не идёт) ---
             if (currentIdx === -1 && nextIdx !== -1 && dayIndex === getTodayIndex()) {
                 const nextLesson = bellSchedule[nextIdx];
                 const timeLeft = getTimeDiff(nextLesson.start, now);
@@ -733,7 +730,9 @@
                 const isLunchSlot = slot.type === 'lunch';
 
                 if (isLunchSlot) {
+                    // --- ОБЕД ---
                     const isCurrent = (dayIndex === getTodayIndex() && i === currentIdx);
+                    const isNext = (dayIndex === getTodayIndex() && i === nextIdx);
                     const timeRange = `${slot.start} – ${slot.end}`;
 
                     let progress = 0;
@@ -756,25 +755,28 @@
                     const currentClass = isCurrent ? 'current-lesson lunch' : '';
                     const progressBar = isCurrent ? `<div class="lesson-progress" style="width: ${progress}%;"></div>` : '';
 
-                    html += `
-                        <div class="lesson-item lunch ${currentClass}" style="${isCurrent ? 'border-color: #f59e0b !important;' : ''}">
-                            ${progressBar}
-                            <div class="lesson-number">🍔</div>
-                            <div class="lesson-icon">🍽️</div>
-                            <div class="lesson-info">
-                                <div class="lesson-name">🍔 Обед! Вкуснятина!</div>
-                                <div class="lesson-sub">${isCurrent ? 'Едим и отдыхаем' : 'Время обеда'}</div>
+                    // Показываем обед, если он идёт (current) или если он следующий (next) и сейчас перемена
+                    if (isCurrent || (isNext && currentIdx === -1)) {
+                        html += `
+                            <div class="lesson-item lunch ${currentClass}" style="${isCurrent ? 'border-color: #f59e0b !important;' : ''}">
+                                ${progressBar}
+                                <div class="lesson-number">🍔</div>
+                                <div class="lesson-icon">🍽️</div>
+                                <div class="lesson-info">
+                                    <div class="lesson-name">🍔 Обед! Вкуснятина!</div>
+                                    <div class="lesson-sub">${isCurrent ? 'Едим и отдыхаем' : 'Скоро обед!'}</div>
+                                </div>
+                                <div class="lesson-time">${isCurrent ? `⏳ ${timeLeftStr}` : timeRange}</div>
                             </div>
-                            <div class="lesson-time">${isCurrent ? `⏳ ${timeLeftStr}` : timeRange}</div>
-                        </div>
-                    `;
+                        `;
+                    }
                     continue;
                 }
 
                 // --- ОБЫЧНЫЙ УРОК ---
                 if (lessonIndex >= day.lessons.length) break;
                 const lesson = day.lessons[lessonIndex];
-                const lessonRealIndex = lessonIndex; // для tipMap
+                const lessonRealIndex = lessonIndex;
                 lessonIndex++;
 
                 const tag = lesson.name.includes('платная') ? '⭐ ДОП' :
@@ -825,11 +827,10 @@
             html += `</div>`;
             container.innerHTML = html;
 
-            // Обновляем счётчик
             const totalLessons = day.lessons.length;
             lessonCountEl.textContent = `📚 ${totalLessons} уроков`;
 
-            // --- КЛИК ПО УРОКУ (исправлено!) ---
+            // --- КЛИК ПО УРОКУ ---
             document.querySelectorAll('.lesson-item:not(.lunch)').forEach(el => {
                 el.addEventListener('click', function() {
                     const dayIdx = parseInt(this.dataset.day);
@@ -844,9 +845,9 @@
         }
 
         // ============================================================
-        // 6. ТАЙМЕР И ОБНОВЛЕНИЕ В РЕАЛЬНОМ ВРЕМЕНИ
+        // 6. ТАЙМЕР (тикает каждую секунду)
         // ============================================================
-        function updateTimerAndUI() {
+        function updateTimer() {
             const now = new Date();
             const { currentIdx, nextIdx } = getCurrentLessonIndex();
             const timerEl = document.getElementById('timerValue');
@@ -880,11 +881,6 @@
                 timerEl.textContent = '🎉';
                 timerEl.style.color = '#94a3b8';
                 timerDisplay.innerHTML = `⏱️ Уроки закончились! <span class="time" style="color:#94a3b8">🎉</span>`;
-            }
-
-            // Обновляем расписание каждые 10 секунд (для индикаторов и анимации)
-            if (Math.floor(Date.now() / 10000) > Math.floor((Date.now() - 10000) / 10000)) {
-                renderSchedule();
             }
         }
 
@@ -950,7 +946,6 @@
         const themeBtn = document.getElementById('themeToggle');
         let isLight = true;
 
-        // Загружаем сохранённую тему
         try {
             const saved = localStorage.getItem('theme');
             if (saved === 'dark') {
@@ -958,7 +953,6 @@
                 document.body.className = 'dark';
                 themeBtn.textContent = '☀️ Светлая';
             } else {
-                // По умолчанию светлая
                 document.body.className = 'light';
                 themeBtn.textContent = '🌙 Тёмная';
             }
@@ -972,7 +966,7 @@
         });
 
         // ============================================================
-        // 10. ПОЛНЫЙ ЭКРАН (кнопка "На весь")
+        // 10. ПОЛНЫЙ ЭКРАН
         // ============================================================
         const fsBtn = document.getElementById('fullscreenToggle');
 
@@ -1046,9 +1040,14 @@
         // ============================================================
         // 13. ЗАПУСК ТАЙМЕРОВ И ОБНОВЛЕНИЙ
         // ============================================================
-        // Запускаем таймер и обновление UI каждую секунду
-        updateTimerAndUI();
-        setInterval(updateTimerAndUI, 1000);
+        // Таймер тикает каждую секунду
+        updateTimer();
+        setInterval(updateTimer, 1000);
+
+        // Расписание обновляется каждые 10 секунд (для индикаторов и анимации)
+        setInterval(() => {
+            renderSchedule();
+        }, 10000);
 
         // ============================================================
         // 14. PULL-TO-REFRESH
