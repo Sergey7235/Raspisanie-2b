@@ -15,7 +15,7 @@
         body {
             display: flex;
             flex-direction: column;
-            padding: 8px 12px 10px;
+            padding: 6px 10px 8px;
             transition: background 0.5s, color 0.5s;
             background: #f0f9ff;
             color: #1e293b;
@@ -95,7 +95,7 @@
             justify-content: flex-end;
             align-items: center;
             gap: 6px;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
             position: relative;
             z-index: 2;
             flex-shrink: 0;
@@ -105,8 +105,8 @@
             backdrop-filter: blur(8px);
             border: none;
             border-radius: 30px;
-            padding: 4px 12px;
-            font-size: 0.65rem;
+            padding: 3px 10px;
+            font-size: 0.6rem;
             font-weight: 700;
             color: #1e293b;
             cursor: pointer;
@@ -124,15 +124,15 @@
         .control-btn:active { transform: scale(0.94); }
         .header {
             text-align: center;
-            padding: 4px 0 4px;
+            padding: 2px 0 2px;
             border-bottom: 2px dashed #fbbf24;
-            margin-bottom: 6px;
+            margin-bottom: 3px;
             position: relative;
             z-index: 2;
             flex-shrink: 0;
         }
         .header h1 {
-            font-size: 1.4rem;
+            font-size: 1.2rem;
             font-weight: 900;
             background: linear-gradient(45deg, #f97316, #eab308, #22d3ee);
             -webkit-background-clip: text;
@@ -149,25 +149,25 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             flex-wrap: wrap;
-            margin-top: 2px;
+            margin-top: 1px;
         }
         .header .sub .badge {
-            font-size: 0.6rem;
+            font-size: 0.5rem;
             font-weight: 700;
-            padding: 2px 14px;
+            padding: 1px 10px;
             border-radius: 30px;
             background: #f43f5e;
             color: #fff;
             box-shadow: 0 2px 12px rgba(244, 63, 94, 0.3);
         }
         .header .sub .count {
-            font-size: 0.6rem;
+            font-size: 0.5rem;
             font-weight: 600;
             color: #64748b;
             background: rgba(255,255,255,0.5);
-            padding: 2px 14px;
+            padding: 1px 10px;
             border-radius: 30px;
         }
         body.dark .header .sub .count {
@@ -178,18 +178,18 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 8px;
-            margin-bottom: 4px;
+            gap: 6px;
+            margin-bottom: 2px;
             flex-shrink: 0;
             position: relative;
             z-index: 2;
-            font-size: 0.6rem;
+            font-size: 0.5rem;
             font-weight: 600;
         }
         .info-panel .weather, .info-panel .timer {
             background: rgba(255,255,255,0.5);
             backdrop-filter: blur(4px);
-            padding: 3px 10px;
+            padding: 2px 8px;
             border-radius: 30px;
             display: flex;
             align-items: center;
@@ -208,9 +208,9 @@
         body.dark .info-panel .timer .time { color: #f87171; }
         .day-tabs {
             display: flex;
-            gap: 6px;
+            gap: 4px;
             overflow-x: auto;
-            padding: 2px 0 6px;
+            padding: 1px 0 4px;
             scrollbar-width: none;
             position: relative;
             z-index: 2;
@@ -219,13 +219,13 @@
         .day-tabs::-webkit-scrollbar { display: none; }
         .day-btn {
             flex: 0 0 auto;
-            padding: 5px 12px;
+            padding: 3px 8px;
             border-radius: 30px;
             border: none;
             background: rgba(255,255,255,0.6);
             backdrop-filter: blur(4px);
             color: #475569;
-            font-size: 0.7rem;
+            font-size: 0.6rem;
             font-weight: 700;
             cursor: pointer;
             transition: 0.2s;
@@ -255,30 +255,31 @@
             position: relative;
             z-index: 2;
             min-height: 0;
-            padding-bottom: 4px;
+            padding: 2px 0;
         }
         .schedule-card { display: block; }
 
-        /* --- УРОКИ --- */
+        /* --- УРОКИ (компактная версия) --- */
         .lesson-item {
-            border-radius: 14px;
-            padding: 12px 16px;
-            margin-bottom: 10px;
+            border-radius: 10px;
+            padding: 6px 10px;
+            margin-bottom: 4px;
             display: flex;
             align-items: center;
-            gap: 12px;
-            border-left: 5px solid #fbbf24;
+            gap: 8px;
+            border-left: 4px solid #fbbf24;
             transition: 0.2s;
             cursor: pointer;
-            background: rgba(255,255,255,0.85);
+            background: rgba(255,255,255,0.8);
             backdrop-filter: blur(4px);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
             position: relative;
             overflow: hidden;
+            min-height: 36px;
         }
         body.dark .lesson-item {
-            background: rgba(30, 41, 59, 0.92);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            background: rgba(30, 41, 59, 0.9);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
         }
         .lesson-item:active { transform: scale(0.97); }
 
@@ -295,30 +296,30 @@
         }
         @keyframes lunchWobble {
             0%, 100% { transform: scale(1) rotate(0deg); }
-            25% { transform: scale(1.02) rotate(-1deg); }
-            75% { transform: scale(1.02) rotate(1deg); }
+            25% { transform: scale(1.01) rotate(-0.5deg); }
+            75% { transform: scale(1.01) rotate(0.5deg); }
         }
         .lesson-item.lunch .lesson-icon {
             animation: lunchIcon 2s ease-in-out infinite;
         }
         @keyframes lunchIcon {
             0%, 100% { transform: scale(1) rotate(0deg); }
-            50% { transform: scale(1.2) rotate(10deg); }
+            50% { transform: scale(1.1) rotate(5deg); }
         }
 
         .lesson-item.current-lesson {
             border-left-color: #22c55e !important;
             border: 2px solid #22c55e;
-            box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.2);
         }
         body.dark .lesson-item.current-lesson {
-            box-shadow: 0 0 30px rgba(34, 197, 94, 0.5);
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
         }
         .lesson-progress {
             position: absolute;
             bottom: 0;
             left: 0;
-            height: 4px;
+            height: 3px;
             background: #22c55e;
             transition: width 0.5s linear;
             border-radius: 0 2px 0 0;
@@ -333,44 +334,51 @@
         .lesson-number {
             background: #e2e8f0;
             color: #475569;
-            width: 28px;
-            height: 28px;
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 800;
-            font-size: 0.75rem;
+            font-size: 0.55rem;
             flex-shrink: 0;
         }
         body.dark .lesson-number {
             background: #334155;
             color: #cbd5e1;
         }
-        .lesson-icon { font-size: 1.6rem; width: 36px; text-align: center; flex-shrink: 0; }
-        .lesson-info { flex: 1; min-width: 0; }
+        .lesson-icon { font-size: 1.2rem; width: 28px; text-align: center; flex-shrink: 0; }
+        .lesson-info {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+        }
         .lesson-name {
-            font-size: 1rem;
+            font-size: 0.75rem;
             font-weight: 700;
             letter-spacing: 0.2px;
-            white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 100%;
         }
         .lesson-sub {
-            font-size: 0.6rem;
+            font-size: 0.5rem;
             color: #94a3b8;
-            margin-top: 2px;
+            margin-top: 1px;
             font-weight: 500;
         }
         .lesson-time {
-            font-size: 0.65rem;
+            font-size: 0.55rem;
             font-weight: 600;
             color: #64748b;
             background: rgba(0,0,0,0.05);
-            padding: 3px 10px;
+            padding: 2px 8px;
             border-radius: 20px;
             white-space: nowrap;
+            flex-shrink: 0;
         }
         body.dark .lesson-time {
             color: #94a3b8;
@@ -381,13 +389,13 @@
         .section-divider {
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin: 12px 0 10px;
+            gap: 8px;
+            margin: 6px 0 4px;
             color: #94a3b8;
-            font-size: 0.7rem;
+            font-size: 0.6rem;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
         }
         .section-divider::before, .section-divider::after {
             content: '';
@@ -403,54 +411,54 @@
             background: #334155;
         }
 
-        /* --- НИЖНИЙ БЛОК (ПОДНЯТ) --- */
+        /* --- НИЖНИЙ БЛОК --- */
         .bottom-block {
             display: flex;
             flex-direction: column;
-            gap: 6px;
-            margin-top: 8px;
+            gap: 4px;
+            margin-top: 4px;
             flex-shrink: 0;
             position: relative;
             z-index: 2;
         }
         .tooltip-box {
-            border-radius: 12px;
-            padding: 8px 14px;
+            border-radius: 8px;
+            padding: 4px 10px;
             border-left: 4px solid #f43f5e;
-            font-size: 0.7rem;
-            line-height: 1.4;
-            min-height: 36px;
+            font-size: 0.6rem;
+            line-height: 1.3;
+            min-height: 28px;
             transition: 0.3s;
-            background: rgba(255,255,255,0.9);
+            background: rgba(255,255,255,0.85);
             backdrop-filter: blur(6px);
             color: #1e293b;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            box-shadow: 0 1px 6px rgba(0,0,0,0.04);
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
         body.dark .tooltip-box {
-            background: rgba(30, 41, 59, 0.92);
+            background: rgba(30, 41, 59, 0.9);
             color: #cbd5e1;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+            box-shadow: 0 1px 6px rgba(0,0,0,0.2);
         }
-        .tooltip-box .icon { font-size: 1rem; flex-shrink: 0; }
+        .tooltip-box .icon { font-size: 0.8rem; flex-shrink: 0; }
         .tooltip-box .text { flex: 1; }
         .tooltip-box .text strong { color: #fbbf24; }
 
         .bottom-actions {
             display: flex;
-            gap: 6px;
+            gap: 4px;
             flex-shrink: 0;
         }
         .bottom-actions .action-btn {
             flex: 1;
-            background: rgba(255,255,255,0.7);
+            background: rgba(255,255,255,0.6);
             backdrop-filter: blur(4px);
             border: none;
             border-radius: 30px;
-            padding: 5px 12px;
-            font-size: 0.6rem;
+            padding: 3px 8px;
+            font-size: 0.5rem;
             font-weight: 600;
             color: #1e293b;
             cursor: pointer;
@@ -458,11 +466,11 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 4px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            gap: 3px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
         }
         body.dark .bottom-actions .action-btn {
-            background: rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.06);
             color: #f1f5f9;
         }
         .bottom-actions .action-btn:active { transform: scale(0.94); }
@@ -495,14 +503,14 @@
         #scheduleContainer::-webkit-scrollbar { width: 0; }
         .pull-indicator {
             text-align: center;
-            font-size: 0.6rem;
+            font-size: 0.5rem;
             color: #94a3b8;
-            padding: 2px 0;
+            padding: 1px 0;
             opacity: 0;
             transition: opacity 0.3s;
             position: relative;
             z-index: 2;
-            height: 18px;
+            height: 14px;
         }
         .pull-indicator.show { opacity: 1; }
         @media print {
@@ -571,7 +579,7 @@
 
     <script>
         // ============================================================
-        // 1. ДАННЫЕ (с субботой и воскресеньем)
+        // 1. ДАННЫЕ
         // ============================================================
         const days = [{
             name: 'ПОНЕДЕЛЬНИК',
@@ -666,7 +674,8 @@
             const today = new Date().getDay();
             const weekdays = [1,2,3,4,5,6,0];
             let idx = weekdays.indexOf(today);
-            if (idx === -1 || idx > 4) idx = 0;
+            // Если сегодня суббота (6) или воскресенье (0) — показываем их
+            // но по умолчанию для субботы и воскресенья показываем соответствующие дни
             return idx;
         }
 
@@ -700,16 +709,20 @@
             return (target - now) / 1000;
         }
 
-        function formatTime(seconds) {
+        function formatTimeSmart(seconds) {
             if (seconds < 0) seconds = 0;
-            const hrs = Math.floor(seconds / 3600);
-            const mins = Math.floor((seconds % 3600) / 60);
+            const days = Math.floor(seconds / 86400);
+            const hours = Math.floor((seconds % 86400) / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
             const secs = Math.floor(seconds % 60);
-            if (hrs > 0) {
-                return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-            } else {
-                return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-            }
+
+            let parts = [];
+            if (days > 0) parts.push(days + 'д');
+            if (hours > 0 || days > 0) parts.push(String(hours).padStart(2, '0') + 'ч');
+            if (minutes > 0 || hours > 0 || days > 0) parts.push(String(minutes).padStart(2, '0') + 'м');
+            parts.push(String(secs).padStart(2, '0') + 'с');
+
+            return parts.join(' ');
         }
 
         // ============================================================
@@ -730,31 +743,35 @@
             const now = new Date();
             const isToday = (dayIndex === getTodayIndex());
 
-            // --- ОБНОВЛЯЕМ ТАЙМЕР ---
-            if (currentIdx !== -1) {
+            // --- ОБНОВЛЯЕМ ТАЙМЕР (СВЕРХУ) ---
+            if (!day.isWeekend && currentIdx !== -1) {
                 const endTime = bellSchedule[currentIdx].end;
                 const diff = getTimeDiff(endTime, now);
                 if (diff > 0) {
-                    timerEl.textContent = formatTime(diff);
+                    timerEl.textContent = formatTimeSmart(diff);
                     timerEl.style.color = '#f43f5e';
                     timerDisplay.innerHTML = `⏱️ До звонка: <span class="time" style="color:#f43f5e">${timerEl.textContent}</span>`;
                 } else {
-                    timerEl.textContent = '0:00';
+                    timerEl.textContent = '0с';
                     timerEl.style.color = '#f43f5e';
-                    timerDisplay.innerHTML = `⏱️ До звонка: <span class="time" style="color:#f43f5e">0:00</span>`;
+                    timerDisplay.innerHTML = `⏱️ До звонка: <span class="time" style="color:#f43f5e">0с</span>`;
                 }
-            } else if (nextIdx !== -1) {
+            } else if (!day.isWeekend && nextIdx !== -1) {
                 const startTime = bellSchedule[nextIdx].start;
                 const diff = getTimeDiff(startTime, now);
                 if (diff > 0) {
-                    timerEl.textContent = formatTime(diff);
+                    timerEl.textContent = formatTimeSmart(diff);
                     timerEl.style.color = '#34d399';
                     timerDisplay.innerHTML = `⏱️ До урока: <span class="time" style="color:#34d399">${timerEl.textContent}</span>`;
                 } else {
-                    timerEl.textContent = '0:00';
+                    timerEl.textContent = '0с';
                     timerEl.style.color = '#34d399';
-                    timerDisplay.innerHTML = `⏱️ До урока: <span class="time" style="color:#34d399">0:00</span>`;
+                    timerDisplay.innerHTML = `⏱️ До урока: <span class="time" style="color:#34d399">0с</span>`;
                 }
+            } else if (day.isWeekend) {
+                timerEl.textContent = '🎉';
+                timerEl.style.color = '#94a3b8';
+                timerDisplay.innerHTML = `⏱️ Выходные! <span class="time" style="color:#94a3b8">🎉</span>`;
             } else {
                 timerEl.textContent = '🎉';
                 timerEl.style.color = '#94a3b8';
@@ -796,12 +813,10 @@
             if (currentIdx === -1 && nextIdx !== -1 && isToday) {
                 const nextLesson = bellSchedule[nextIdx];
                 const timeLeft = getTimeDiff(nextLesson.start, now);
-                const mins = Math.floor(timeLeft / 60);
-                const secs = Math.floor(timeLeft % 60);
                 const isLunch = nextLesson.type === 'lunch';
                 const icon = isLunch ? '🍔' : '⌛';
                 const title = isLunch ? 'Обед!' : 'Перемена';
-                const sub = isLunch ? 'Вкуснятина!' : `Следующий урок через ${mins} мин ${secs} сек`;
+                const sub = isLunch ? 'Вкуснятина!' : `Следующий урок через ${formatTimeSmart(timeLeft)}`;
                 html += `
                     <div class="lesson-item current-lesson ${isLunch ? 'lunch' : ''}" style="border-left-color: ${isLunch ? '#f59e0b' : '#22c55e'} !important; border-color: ${isLunch ? '#f59e0b' : '#22c55e'} !important;">
                         <div class="lesson-icon">${icon}</div>
@@ -809,17 +824,13 @@
                             <div class="lesson-name">${title}</div>
                             <div class="lesson-sub">${sub}</div>
                         </div>
-                        <div class="lesson-time">${isLunch ? '🍽️' : '⏳'} ${mins}:${String(secs).padStart(2, '0')}</div>
+                        <div class="lesson-time">${isLunch ? '🍽️' : '⏳'} ${formatTimeSmart(timeLeft)}</div>
                     </div>
                 `;
             }
 
             // --- РИСУЕМ УРОКИ С РАЗДЕЛЕНИЕМ ДО/ПОСЛЕ ОБЕДА ---
             let lessonIndex = 0;
-            let hasBeforeLunch = false;
-            let hasAfterLunch = false;
-
-            // Сначала проверим, есть ли уроки до и после обеда
             const beforeLunchLessons = [];
             const afterLunchLessons = [];
 
@@ -829,14 +840,13 @@
                 if (lessonIndex >= day.lessons.length) break;
                 const lesson = day.lessons[lessonIndex];
                 lessonIndex++;
-                if (i < 3) { // до обеда (первые 3 урока)
+                if (i < 3) {
                     beforeLunchLessons.push({ slot, lesson, index: i });
                 } else {
                     afterLunchLessons.push({ slot, lesson, index: i });
                 }
             }
 
-            // Сбросим счётчик
             lessonIndex = 0;
 
             // --- ДО ОБЕДА ---
@@ -848,7 +858,7 @@
                 }
             }
 
-            // --- ОБЕД (всегда показываем, даже если нет уроков) ---
+            // --- ОБЕД ---
             const lunchSlot = bellSchedule.find(s => s.type === 'lunch');
             if (lunchSlot) {
                 const isCurrent = (isToday && bellSchedule.indexOf(lunchSlot) === currentIdx);
@@ -866,9 +876,7 @@
                     }
                     const left = getTimeDiff(lunchSlot.end, now);
                     if (left > 0) {
-                        const mins = Math.floor(left / 60);
-                        const secs = Math.floor(left % 60);
-                        timeLeftStr = `${mins}мин ${secs}сек`;
+                        timeLeftStr = formatTimeSmart(left);
                     }
                 }
 
@@ -941,9 +949,7 @@
                 }
                 const left = getTimeDiff(slot.end, now);
                 if (left > 0) {
-                    const mins = Math.floor(left / 60);
-                    const secs = Math.floor(left % 60);
-                    timeLeftStr = `${mins}мин ${secs}сек`;
+                    timeLeftStr = formatTimeSmart(left);
                 }
             }
 
@@ -968,36 +974,20 @@
         }
 
         // ============================================================
-        // 7. ОБНОВЛЕНИЕ ДИНАМИЧЕСКИХ ЭЛЕМЕНТОВ
+        // 7. ОБНОВЛЕНИЕ ДИНАМИЧЕСКИХ ЭЛЕМЕНТОВ (БЕЗ МИГАНИЙ)
         // ============================================================
         function updateDynamicElements(currentIdx, now) {
             const isToday = (currentDay === getTodayIndex());
             if (!isToday) return;
 
             const items = container.querySelectorAll('.lesson-item');
-            let lessonIndex = 0;
-            let itemIndex = 0;
-
-            // Пропускаем "Перемена" / "Обед", если она есть
-            if (items.length > 0) {
-                const firstItem = items[0];
-                if (firstItem.querySelector('.lesson-name')?.textContent.includes('Перемена') ||
-                    firstItem.querySelector('.lesson-name')?.textContent.includes('Обед')) {
-                    itemIndex = 1;
-                }
-            }
-
-            // Пропускаем разделители "До обеда" и "После обеда" — они не имеют классов .lesson-item
-            // Просто проходим по всем .lesson-item подряд
-            const lessonItems = container.querySelectorAll('.lesson-item');
             let currentItemIdx = 0;
 
             for (let i = 0; i < bellSchedule.length; i++) {
                 const slot = bellSchedule[i];
                 if (slot.type === 'lunch') {
-                    // Обновляем обед, если он есть
-                    if (currentItemIdx < lessonItems.length) {
-                        const el = lessonItems[currentItemIdx];
+                    if (currentItemIdx < items.length) {
+                        const el = items[currentItemIdx];
                         if (el.classList.contains('lunch') && i === currentIdx) {
                             const progressBar = el.querySelector('.lesson-progress');
                             if (progressBar) {
@@ -1013,11 +1003,9 @@
                             if (timeEl) {
                                 const left = getTimeDiff(slot.end, now);
                                 if (left > 0) {
-                                    const mins = Math.floor(left / 60);
-                                    const secs = Math.floor(left % 60);
-                                    timeEl.textContent = `⏳ ${mins}мин ${secs}сек`;
+                                    timeEl.textContent = `⏳ ${formatTimeSmart(left)}`;
                                 } else {
-                                    timeEl.textContent = '⏳ 0мин';
+                                    timeEl.textContent = '⏳ 0с';
                                 }
                             }
                         }
@@ -1026,9 +1014,8 @@
                     continue;
                 }
 
-                // Обновляем обычный урок
-                if (currentItemIdx < lessonItems.length) {
-                    const el = lessonItems[currentItemIdx];
+                if (currentItemIdx < items.length) {
+                    const el = items[currentItemIdx];
                     if (i === currentIdx && !el.classList.contains('lunch')) {
                         const progressBar = el.querySelector('.lesson-progress');
                         if (progressBar) {
@@ -1044,11 +1031,9 @@
                         if (timeEl) {
                             const left = getTimeDiff(slot.end, now);
                             if (left > 0) {
-                                const mins = Math.floor(left / 60);
-                                const secs = Math.floor(left % 60);
-                                timeEl.textContent = `⏳ ${mins}мин ${secs}сек`;
+                                timeEl.textContent = `⏳ ${formatTimeSmart(left)}`;
                             } else {
-                                timeEl.textContent = '⏳ 0мин';
+                                timeEl.textContent = '⏳ 0с';
                             }
                         }
                     }
@@ -1095,7 +1080,8 @@
         dayBtns.forEach((btn, i) => btn.addEventListener('click', () => setDay(i)));
 
         const todayIndex = getTodayIndex();
-        setDay(todayIndex);
+        // Если сегодня суббота (5) или воскресенье (6) — показываем их
+        setDay(todayIndex >= 0 && todayIndex <= 6 ? todayIndex : 0);
 
         // ============================================================
         // 10. СВАЙП (горизонтальный)
@@ -1280,7 +1266,7 @@
         }, { passive: true });
 
         // ============================================================
-        // 17. ЭКСПОРТ В PDF (полное расписание на неделю)
+        // 17. ЭКСПОРТ В PDF
         // ============================================================
         document.getElementById('exportPdf').addEventListener('click', function() {
             // Создаём временный контейнер для всего расписания
