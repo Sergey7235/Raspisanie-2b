@@ -392,15 +392,15 @@
             background: rgba(255,255,255,0.05);
         }
 
+        /* --- НИЖНИЙ БЛОК (поднят выше) --- */
         .bottom-block {
             display: flex;
             flex-direction: column;
-            gap: 3px;
-            margin-top: 3px;
+            gap: 4px;
+            margin-top: 6px;
             flex-shrink: 0;
             position: relative;
             z-index: 2;
-            padding-bottom: 2px;
         }
         .tooltip-box {
             border-radius: 10px;
@@ -426,19 +426,6 @@
         .tooltip-box .icon { font-size: 0.9rem; flex-shrink: 0; }
         .tooltip-box .text { flex: 1; }
         .tooltip-box .text strong { color: #fbbf24; }
-        .fact-box {
-            border-radius: 10px;
-            padding: 4px 10px;
-            font-size: 0.6rem;
-            text-align: center;
-            background: rgba(255,255,255,0.4);
-            backdrop-filter: blur(4px);
-            color: #475569;
-        }
-        body.dark .fact-box {
-            background: rgba(255,255,255,0.05);
-            color: #94a3b8;
-        }
         .bottom-actions {
             display: flex;
             gap: 4px;
@@ -529,7 +516,7 @@
 
     <div class="control-bar">
         <button class="control-btn" id="themeToggle">🌙 Тёмная</button>
-        <button class="control-btn" id="fullscreenToggle">⛶ Сжать</button>
+        <button class="control-btn" id="fullscreenToggle">⛶ На весь</button>
         <button class="control-btn" id="exportPdf">📄 PDF</button>
     </div>
 
@@ -558,12 +545,12 @@
 
     <div id="scheduleContainer"></div>
 
+    <!-- НИЖНИЙ БЛОК ПОДНЯТ ВВЕРХ -->
     <div class="bottom-block">
         <div class="tooltip-box" id="tooltip">
             <span class="icon">👆</span>
             <span class="text">Нажми на урок — узнаешь секрет!</span>
         </div>
-        <div class="fact-box" id="factBox">🧠 Факт дня: ...</div>
         <div class="bottom-actions">
             <button class="action-btn" id="shareBtn"><span>📤</span> Поделиться</button>
         </div>
@@ -640,11 +627,22 @@
             { start: '13:30', end: '14:10', type: 'lesson' },
             { start: '14:20', end: '15:00', type: 'lesson' },
             { start: '15:20', end: '16:00', type: 'lesson' },
-            { start: '16:00', end: '16:20', type: 'lunch' },   // 🍔 ОБЕД
+            { start: '16:00', end: '16:20', type: 'lunch' },
             { start: '16:20', end: '17:00', type: 'lesson' },
             { start: '17:10', end: '17:50', type: 'lesson' },
             { start: '18:00', end: '18:40', type: 'lesson' },
         ];
+
+        // ============================================================
+        // 4. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+        // ============================================================
+        function getTodayIndex() {
+            const today = new Date().getDay();
+            const weekdays = [1,2,3,4,5,6,0];
+            let idx = weekdays.indexOf(today);
+            if (idx === -1 || idx > 4) idx = 0;
+            return idx;
+        }
 
         function getCurrentLessonIndex() {
             const now = new Date();
@@ -676,21 +674,36 @@
             return (target - now) / 1000;
         }
 
+        function formatTime(seconds) {
+            if (seconds < 0) seconds = 0;
+            const hrs = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            const secs = Math.floor(seconds % 60);
+            if (hrs > 0) {
+                return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            } else {
+                return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            }
+        }
+
         // ============================================================
-        // 4. ОТРИСОВКА ДНЯ (с обедом)
+        // 5. ОТРИСОВКА (ВСЯ ЛОГИКА ТУТ)
         // ============================================================
         const container = document.getElementById('scheduleContainer');
         const lessonCountEl = document.getElementById('lessonCount');
+        const timerDisplay = document.getElementById('timerDisplay');
+        const timerValue = document.getElementById('timerValue');
 
-        function renderDay(index) {
-            const day = days[index];
+        function renderSchedule() {
+            const dayIndex = currentDay;
+            const day = days[dayIndex];
             const { currentIdx, nextIdx } = getCurrentLessonIndex();
             const now = new Date();
 
             let html = `<div class="schedule-card active">`;
 
-            // Если сейчас перемена (не обед и не урок) — показываем специальный блок
-            if (currentIdx === -1 && nextIdx !== -1 && index === getTodayIndex()) {
+            // --- СЕЙЧАС ПЕРЕМЕНА ИЛИ ОБЕД ---
+            if (currentIdx === -1 && nextIdx !== -1 && dayIndex === getTodayIndex()) {
                 const nextLesson = bellSchedule[nextIdx];
                 const timeLeft = getTimeDiff(nextLesson.start, now);
                 const mins = Math.floor(timeLeft / 60);
@@ -711,18 +724,15 @@
                 `;
             }
 
-            // Рисуем все уроки по порядку
-            const lessonItems = day.lessons;
+            // --- РИСУЕМ ВСЕ УРОКИ И ОБЕД ---
             let lessonIndex = 0;
-
             for (let i = 0; i < bellSchedule.length; i++) {
                 const slot = bellSchedule[i];
                 const isLunchSlot = slot.type === 'lunch';
 
                 if (isLunchSlot) {
-                    // Обед — отдельная плашка
-                    const isCurrent = (index === getTodayIndex() && i === currentIdx);
-                    const isPast = (index === getTodayIndex() && i < currentIdx);
+                    const isCurrent = (dayIndex === getTodayIndex() && i === currentIdx);
+                    const isPast = (dayIndex === getTodayIndex() && i < currentIdx);
                     const timeRange = `${slot.start} – ${slot.end}`;
 
                     let progress = 0;
@@ -742,7 +752,7 @@
                         }
                     }
 
-                    const currentClass = isCurrent ? 'current-lesson lunch' : (isPast ? 'lesson-past' : '');
+                    const currentClass = isCurrent ? 'current-lesson lunch' : '';
                     const progressBar = isCurrent ? `<div class="lesson-progress" style="width: ${progress}%;"></div>` : '';
 
                     html += `
@@ -760,21 +770,21 @@
                     continue;
                 }
 
-                // Обычный урок
-                if (lessonIndex >= lessonItems.length) break;
-                const lesson = lessonItems[lessonIndex];
+                // --- ОБЫЧНЫЙ УРОК ---
+                if (lessonIndex >= day.lessons.length) break;
+                const lesson = day.lessons[lessonIndex];
                 lessonIndex++;
 
                 const tag = lesson.name.includes('платная') ? '⭐ ДОП' :
                             lesson.name.includes('кружок') ? '🎯 КРУЖОК' : '';
                 const num = lessonIndex;
 
-                const isCurrent = (index === getTodayIndex() && i === currentIdx);
-                const isPast = (index === getTodayIndex() && i < currentIdx);
+                const isCurrent = (dayIndex === getTodayIndex() && i === currentIdx);
+                const isPast = (dayIndex === getTodayIndex() && i < currentIdx);
 
                 let progress = 0;
                 let timeLeftStr = '';
-                let timeRange = `${slot.start} – ${slot.end}`;
+                const timeRange = `${slot.start} – ${slot.end}`;
 
                 if (isCurrent) {
                     const total = getTimeDiff(slot.end, new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0)) -
@@ -795,7 +805,7 @@
                 const progressBar = isCurrent ? `<div class="lesson-progress" style="width: ${progress}%;"></div>` : '';
 
                 html += `
-                    <div class="lesson-item ${lesson.cls} ${currentClass}" data-day="${index}" data-idx="${i}" style="${isCurrent ? 'border-color: #22c55e !important;' : ''}">
+                    <div class="lesson-item ${lesson.cls} ${currentClass}" data-day="${dayIndex}" data-idx="${i}" style="${isCurrent ? 'border-color: #22c55e !important;' : ''}">
                         ${progressBar}
                         <div class="lesson-number">${num}</div>
                         <div class="lesson-icon">${lesson.icon}</div>
@@ -811,10 +821,11 @@
             html += `</div>`;
             container.innerHTML = html;
 
+            // Обновляем счётчик
             const totalLessons = day.lessons.length;
             lessonCountEl.textContent = `📚 ${totalLessons} уроков`;
 
-            // Клик по уроку
+            // --- КЛИК ПО УРОКУ ---
             document.querySelectorAll('.lesson-item:not(.lunch)').forEach(el => {
                 el.addEventListener('click', function() {
                     const day = parseInt(this.dataset.day);
@@ -828,175 +839,10 @@
             });
         }
 
-        function getTodayIndex() {
-            const today = new Date().getDay();
-            const weekdays = [1,2,3,4,5,6,0];
-            let idx = weekdays.indexOf(today);
-            if (idx === -1 || idx > 4) idx = 0;
-            return idx;
-        }
-
         // ============================================================
-        // 5. ПЕРЕКЛЮЧЕНИЕ ДНЕЙ
+        // 6. ТАЙМЕР И ОБНОВЛЕНИЕ В РЕАЛЬНОМ ВРЕМЕНИ
         // ============================================================
-        const dayBtns = document.querySelectorAll('.day-btn');
-        let currentDay = 0;
-
-        function setDay(index) {
-            currentDay = index;
-            dayBtns.forEach((btn, i) => btn.classList.toggle('active', i === index));
-            renderDay(index);
-            const today = new Date().getDay();
-            const weekdays = [1,2,3,4,5,6,0];
-            document.getElementById('todayBadge').textContent =
-                weekdays[today] === index ? '📅 СЕГОДНЯ' : '📅 ' + days[index].name;
-        }
-
-        dayBtns.forEach((btn, i) => btn.addEventListener('click', () => setDay(i)));
-
-        const todayIndex = getTodayIndex();
-        setDay(todayIndex);
-
-        // ============================================================
-        // 6. СВАЙП
-        // ============================================================
-        let touchStartX = 0;
-        let touchStartY = 0;
-        let isSwiping = false;
-
-        container.addEventListener('touchstart', (e) => {
-            touchStartX = e.touches[0].clientX;
-            touchStartY = e.touches[0].clientY;
-            isSwiping = true;
-        }, { passive: true });
-
-        container.addEventListener('touchmove', (e) => {
-            if (!isSwiping) return;
-            const dx = e.touches[0].clientX - touchStartX;
-            const dy = e.touches[0].clientY - touchStartY;
-            if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 20) {
-                isSwiping = false;
-            }
-        }, { passive: true });
-
-        container.addEventListener('touchend', (e) => {
-            if (!isSwiping) {
-                isSwiping = false;
-                return;
-            }
-            const dx = e.changedTouches[0].clientX - touchStartX;
-            if (Math.abs(dx) > 40) {
-                if (dx > 0 && currentDay > 0) setDay(currentDay - 1);
-                else if (dx < 0 && currentDay < 4) setDay(currentDay + 1);
-            }
-            isSwiping = false;
-        }, { passive: true });
-
-        // ============================================================
-        // 7. ТЕМА
-        // ============================================================
-        const themeBtn = document.getElementById('themeToggle');
-        let isLight = true;
-        themeBtn.addEventListener('click', () => {
-            isLight = !isLight;
-            document.body.className = isLight ? 'light' : 'dark';
-            themeBtn.textContent = isLight ? '🌙 Тёмная' : '☀️ Светлая';
-            try { localStorage.setItem('theme', isLight ? 'light' : 'dark'); } catch(e) {}
-        });
-        try {
-            const saved = localStorage.getItem('theme');
-            if (saved === 'dark') {
-                isLight = false;
-                document.body.className = 'dark';
-                themeBtn.textContent = '☀️ Светлая';
-            }
-        } catch(e) {}
-
-        // ============================================================
-        // 8. ПОЛНЫЙ ЭКРАН
-        // ============================================================
-        const fsBtn = document.getElementById('fullscreenToggle');
-        document.addEventListener('DOMContentLoaded', () => {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(() => {});
-            }
-        });
-        fsBtn.addEventListener('click', () => {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(() => {});
-            } else {
-                if (document.exitFullscreen) document.exitFullscreen();
-            }
-        });
-        document.addEventListener('fullscreenchange', () => {
-            fsBtn.textContent = document.fullscreenElement ? '⛶ Сжать' : '⛶ На весь';
-        });
-
-        // ============================================================
-        // 9. ПОДЕЛИТЬСЯ
-        // ============================================================
-        document.getElementById('shareBtn').addEventListener('click', () => {
-            const url = window.location.href;
-            if (navigator.share) {
-                navigator.share({
-                    title: 'Расписание 2Б',
-                    text: 'Расписание 2Б класса — смотри и не опаздывай!',
-                    url: url
-                }).catch(() => {});
-            } else {
-                navigator.clipboard.writeText(url).then(() => {
-                    const tipText = document.querySelector('.tooltip-box .text');
-                    const oldText = tipText.innerHTML;
-                    tipText.innerHTML = '✅ Ссылка скопирована! Отправь её друзьям.';
-                    setTimeout(() => { tipText.innerHTML = oldText; }, 2500);
-                }).catch(() => {
-                    prompt('Скопируй ссылку:', url);
-                });
-            }
-        });
-
-        // ============================================================
-        // 10. ПОГОДА
-        // ============================================================
-        async function fetchWeather() {
-            const weatherEl = document.getElementById('weatherDisplay');
-            try {
-                const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=57.15&longitude=65.53&current_weather=true&timezone=Asia/Yekaterinburg');
-                if (!res.ok) throw new Error('Ошибка сети');
-                const data = await res.json();
-                const temp = Math.round(data.current_weather.temperature);
-                const code = data.current_weather.weathercode;
-                let emoji = '🌤️';
-                let desc = 'ясно';
-                if (code === 0) { emoji = '☀️'; desc = 'ясно'; }
-                else if (code >= 1 && code <= 3) { emoji = '⛅'; desc = 'облачно'; }
-                else if (code >= 51 && code <= 67) { emoji = '🌧️'; desc = 'дождь'; }
-                else if (code >= 71 && code <= 77) { emoji = '❄️'; desc = 'снег'; }
-                else if (code >= 80 && code <= 99) { emoji = '⛈️'; desc = 'гроза'; }
-                weatherEl.textContent = `${emoji} Тюмень: ${desc}, ${temp}°C`;
-            } catch (e) {
-                weatherEl.textContent = '🌤️ Тюмень: --°C';
-            }
-        }
-        fetchWeather();
-        setInterval(fetchWeather, 600000);
-
-        // ============================================================
-        // 11. ТАЙМЕР
-        // ============================================================
-        function formatTime(seconds) {
-            if (seconds < 0) seconds = 0;
-            const hrs = Math.floor(seconds / 3600);
-            const mins = Math.floor((seconds % 3600) / 60);
-            const secs = Math.floor(seconds % 60);
-            if (hrs > 0) {
-                return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-            } else {
-                return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-            }
-        }
-
-        function updateTimer() {
+        function updateTimerAndUI() {
             const now = new Date();
             const { currentIdx, nextIdx } = getCurrentLessonIndex();
             const timerEl = document.getElementById('timerValue');
@@ -1032,35 +878,182 @@
                 timerDisplay.innerHTML = `⏱️ Уроки закончились! <span class="time" style="color:#94a3b8">🎉</span>`;
             }
 
-            // Обновляем расписание каждые 30 секунд
+            // Обновляем расписание каждые 30 секунд (для индикаторов)
             if (Math.floor(Date.now() / 30000) > Math.floor((Date.now() - 30000) / 30000)) {
-                renderDay(currentDay);
+                renderSchedule();
             }
         }
 
-        updateTimer();
-        setInterval(updateTimer, 1000);
+        // ============================================================
+        // 7. ПЕРЕКЛЮЧЕНИЕ ДНЕЙ
+        // ============================================================
+        const dayBtns = document.querySelectorAll('.day-btn');
+        let currentDay = 0;
+
+        function setDay(index) {
+            currentDay = index;
+            dayBtns.forEach((btn, i) => btn.classList.toggle('active', i === index));
+            renderSchedule();
+            const today = new Date().getDay();
+            const weekdays = [1,2,3,4,5,6,0];
+            document.getElementById('todayBadge').textContent =
+                weekdays[today] === index ? '📅 СЕГОДНЯ' : '📅 ' + days[index].name;
+        }
+
+        dayBtns.forEach((btn, i) => btn.addEventListener('click', () => setDay(i)));
+
+        const todayIndex = getTodayIndex();
+        setDay(todayIndex);
 
         // ============================================================
-        // 12. ФАКТ ДНЯ
+        // 8. СВАЙП (горизонтальный)
         // ============================================================
-        const facts = [
-            '🧠 У осьминога 3 сердца!',
-            '🧠 Улитка может спать 3 года!',
-            '🧠 Воробьи чирикают с разным акцентом, как люди!',
-            '🧠 Слон — единственное животное, которое не умеет прыгать!',
-            '🧠 Пингвины могут пить солёную воду!',
-            '🧠 Кот не может жевать, только кусать!',
-            '🧠 У жирафа самое большое сердце — до 12 кг!',
-            '🧠 За сутки человек говорит около 7000 слов!',
-            '🧠 Дельфины дают друг другу имена!',
-            '🧠 У страуса глаза больше, чем мозг!',
-            '🧠 Медузы не имеют мозга и сердца!',
-        ];
-        document.getElementById('factBox').textContent = facts[new Date().getDate() % facts.length];
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let isSwiping = false;
+
+        container.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+            isSwiping = true;
+        }, { passive: true });
+
+        container.addEventListener('touchmove', (e) => {
+            if (!isSwiping) return;
+            const dx = e.touches[0].clientX - touchStartX;
+            const dy = e.touches[0].clientY - touchStartY;
+            if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 20) {
+                isSwiping = false;
+            }
+        }, { passive: true });
+
+        container.addEventListener('touchend', (e) => {
+            if (!isSwiping) {
+                isSwiping = false;
+                return;
+            }
+            const dx = e.changedTouches[0].clientX - touchStartX;
+            if (Math.abs(dx) > 40) {
+                if (dx > 0 && currentDay > 0) setDay(currentDay - 1);
+                else if (dx < 0 && currentDay < 4) setDay(currentDay + 1);
+            }
+            isSwiping = false;
+        }, { passive: true });
 
         // ============================================================
-        // 13. PULL-TO-REFRESH
+        // 9. ТЕМА (сохранение в localStorage)
+        // ============================================================
+        const themeBtn = document.getElementById('themeToggle');
+        let isLight = true;
+
+        // Загружаем сохранённую тему
+        try {
+            const saved = localStorage.getItem('theme');
+            if (saved === 'dark') {
+                isLight = false;
+                document.body.className = 'dark';
+                themeBtn.textContent = '☀️ Светлая';
+            } else {
+                // По умолчанию светлая
+                document.body.className = 'light';
+                themeBtn.textContent = '🌙 Тёмная';
+            }
+        } catch(e) {}
+
+        themeBtn.addEventListener('click', () => {
+            isLight = !isLight;
+            document.body.className = isLight ? 'light' : 'dark';
+            themeBtn.textContent = isLight ? '🌙 Тёмная' : '☀️ Светлая';
+            try { localStorage.setItem('theme', isLight ? 'light' : 'dark'); } catch(e) {}
+        });
+
+        // ============================================================
+        // 10. ПОЛНЫЙ ЭКРАН (кнопка "На весь")
+        // ============================================================
+        const fsBtn = document.getElementById('fullscreenToggle');
+
+        function updateFullscreenButton() {
+            fsBtn.textContent = document.fullscreenElement ? '⛶ Сжать' : '⛶ На весь';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateFullscreenButton();
+            // Не включаем автоматически, чтобы пользователь сам решал
+        });
+
+        fsBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        });
+
+        document.addEventListener('fullscreenchange', updateFullscreenButton);
+
+        // ============================================================
+        // 11. ПОДЕЛИТЬСЯ
+        // ============================================================
+        document.getElementById('shareBtn').addEventListener('click', () => {
+            const url = window.location.href;
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Расписание 2Б',
+                    text: 'Расписание 2Б класса — смотри и не опаздывай!',
+                    url: url
+                }).catch(() => {});
+            } else {
+                navigator.clipboard.writeText(url).then(() => {
+                    const tipText = document.querySelector('.tooltip-box .text');
+                    const oldText = tipText.innerHTML;
+                    tipText.innerHTML = '✅ Ссылка скопирована! Отправь её друзьям.';
+                    setTimeout(() => { tipText.innerHTML = oldText; }, 2500);
+                }).catch(() => {
+                    prompt('Скопируй ссылку:', url);
+                });
+            }
+        });
+
+        // ============================================================
+        // 12. ПОГОДА
+        // ============================================================
+        async function fetchWeather() {
+            const weatherEl = document.getElementById('weatherDisplay');
+            try {
+                const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=57.15&longitude=65.53&current_weather=true&timezone=Asia/Yekaterinburg');
+                if (!res.ok) throw new Error('Ошибка сети');
+                const data = await res.json();
+                const temp = Math.round(data.current_weather.temperature);
+                const code = data.current_weather.weathercode;
+                let emoji = '🌤️';
+                let desc = 'ясно';
+                if (code === 0) { emoji = '☀️'; desc = 'ясно'; }
+                else if (code >= 1 && code <= 3) { emoji = '⛅'; desc = 'облачно'; }
+                else if (code >= 51 && code <= 67) { emoji = '🌧️'; desc = 'дождь'; }
+                else if (code >= 71 && code <= 77) { emoji = '❄️'; desc = 'снег'; }
+                else if (code >= 80 && code <= 99) { emoji = '⛈️'; desc = 'гроза'; }
+                weatherEl.textContent = `${emoji} Тюмень: ${desc}, ${temp}°C`;
+            } catch (e) {
+                weatherEl.textContent = '🌤️ Тюмень: --°C';
+            }
+        }
+        fetchWeather();
+        setInterval(fetchWeather, 600000);
+
+        // ============================================================
+        // 13. ФАКТ ДНЯ (убрали из нижней панели, оставили только подсказку)
+        // ============================================================
+        // Факт дня теперь не выводится, так как вы его убрали из макета
+
+        // ============================================================
+        // 14. ЗАПУСК ТАЙМЕРОВ И ОБНОВЛЕНИЙ
+        // ============================================================
+        // Запускаем таймер и обновление UI каждую секунду
+        updateTimerAndUI();
+        setInterval(updateTimerAndUI, 1000);
+
+        // ============================================================
+        // 15. PULL-TO-REFRESH (оставлен для возможности принудительно обновить)
         // ============================================================
         let pullStartY2 = 0;
         let pullOffset2 = 0;
@@ -1103,7 +1096,7 @@
         }, { passive: true });
 
         // ============================================================
-        // 14. ЭКСПОРТ В PDF
+        // 16. ЭКСПОРТ В PDF
         // ============================================================
         document.getElementById('exportPdf').addEventListener('click', function() {
             const element = document.getElementById('scheduleContainer');
