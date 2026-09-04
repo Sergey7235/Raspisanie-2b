@@ -262,11 +262,11 @@
         /* --- УРОКИ (компактная версия) --- */
         .lesson-item {
             border-radius: 10px;
-            padding: 6px 10px;
+            padding: 5px 8px;
             margin-bottom: 4px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             border-left: 4px solid #fbbf24;
             transition: 0.2s;
             cursor: pointer;
@@ -275,7 +275,7 @@
             box-shadow: 0 1px 4px rgba(0,0,0,0.04);
             position: relative;
             overflow: hidden;
-            min-height: 36px;
+            min-height: 32px;
         }
         body.dark .lesson-item {
             background: rgba(30, 41, 59, 0.9);
@@ -334,21 +334,21 @@
         .lesson-number {
             background: #e2e8f0;
             color: #475569;
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 800;
-            font-size: 0.55rem;
+            font-size: 0.5rem;
             flex-shrink: 0;
         }
         body.dark .lesson-number {
             background: #334155;
             color: #cbd5e1;
         }
-        .lesson-icon { font-size: 1.2rem; width: 28px; text-align: center; flex-shrink: 0; }
+        .lesson-icon { font-size: 1rem; width: 24px; text-align: center; flex-shrink: 0; }
         .lesson-info {
             flex: 1;
             min-width: 0;
@@ -356,26 +356,26 @@
             flex-direction: column;
         }
         .lesson-name {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 700;
-            letter-spacing: 0.2px;
+            letter-spacing: 0.1px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
             max-width: 100%;
         }
         .lesson-sub {
-            font-size: 0.5rem;
+            font-size: 0.45rem;
             color: #94a3b8;
             margin-top: 1px;
             font-weight: 500;
         }
         .lesson-time {
-            font-size: 0.55rem;
+            font-size: 0.5rem;
             font-weight: 600;
             color: #64748b;
             background: rgba(0,0,0,0.05);
-            padding: 2px 8px;
+            padding: 1px 6px;
             border-radius: 20px;
             white-space: nowrap;
             flex-shrink: 0;
@@ -389,13 +389,13 @@
         .section-divider {
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin: 6px 0 4px;
+            gap: 6px;
+            margin: 4px 0 3px;
             color: #94a3b8;
-            font-size: 0.6rem;
+            font-size: 0.55rem;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
         }
         .section-divider::before, .section-divider::after {
             content: '';
@@ -425,9 +425,9 @@
             border-radius: 8px;
             padding: 4px 10px;
             border-left: 4px solid #f43f5e;
-            font-size: 0.6rem;
+            font-size: 0.55rem;
             line-height: 1.3;
-            min-height: 28px;
+            min-height: 26px;
             transition: 0.3s;
             background: rgba(255,255,255,0.85);
             backdrop-filter: blur(6px);
@@ -674,9 +674,7 @@
             const today = new Date().getDay();
             const weekdays = [1,2,3,4,5,6,0];
             let idx = weekdays.indexOf(today);
-            // Если сегодня суббота (6) или воскресенье (0) — показываем их
-            // но по умолчанию для субботы и воскресенья показываем соответствующие дни
-            return idx;
+            return idx; // 0-6
         }
 
         function getCurrentLessonIndex() {
@@ -703,10 +701,17 @@
         }
 
         function getTimeDiff(targetTimeStr, now) {
+            // Теперь возвращает разницу в секундах, учитывая, что targetTimeStr может быть завтра
             const parts = targetTimeStr.split(':');
             const target = new Date(now);
             target.setHours(parseInt(parts[0]), parseInt(parts[1]), 0);
-            return (target - now) / 1000;
+
+            let diff = (target - now) / 1000;
+            if (diff < 0) {
+                // Если время уже прошло сегодня, добавляем сутки
+                diff += 86400;
+            }
+            return diff;
         }
 
         function formatTimeSmart(seconds) {
@@ -741,45 +746,53 @@
             const day = days[dayIndex];
             const { currentIdx, nextIdx } = getCurrentLessonIndex();
             const now = new Date();
-            const isToday = (dayIndex === getTodayIndex());
+            const todayIdx = getTodayIndex();
+            const isToday = (dayIndex === todayIdx);
 
             // --- ОБНОВЛЯЕМ ТАЙМЕР (СВЕРХУ) ---
-            if (!day.isWeekend && currentIdx !== -1) {
-                const endTime = bellSchedule[currentIdx].end;
-                const diff = getTimeDiff(endTime, now);
-                if (diff > 0) {
-                    timerEl.textContent = formatTimeSmart(diff);
-                    timerEl.style.color = '#f43f5e';
-                    timerDisplay.innerHTML = `⏱️ До звонка: <span class="time" style="color:#f43f5e">${timerEl.textContent}</span>`;
+            if (isToday && !day.isWeekend) {
+                // Сегодня и не выходной
+                if (currentIdx !== -1) {
+                    const endTime = bellSchedule[currentIdx].end;
+                    const diff = getTimeDiff(endTime, now);
+                    if (diff > 0) {
+                        timerEl.textContent = formatTimeSmart(diff);
+                        timerEl.style.color = '#f43f5e';
+                        timerDisplay.innerHTML = `⏱️ До звонка: <span class="time" style="color:#f43f5e">${timerEl.textContent}</span>`;
+                    } else {
+                        timerEl.textContent = '0с';
+                        timerEl.style.color = '#f43f5e';
+                        timerDisplay.innerHTML = `⏱️ До звонка: <span class="time" style="color:#f43f5e">0с</span>`;
+                    }
+                } else if (nextIdx !== -1) {
+                    const startTime = bellSchedule[nextIdx].start;
+                    const diff = getTimeDiff(startTime, now);
+                    if (diff > 0) {
+                        timerEl.textContent = formatTimeSmart(diff);
+                        timerEl.style.color = '#34d399';
+                        timerDisplay.innerHTML = `⏱️ До урока: <span class="time" style="color:#34d399">${timerEl.textContent}</span>`;
+                    } else {
+                        timerEl.textContent = '0с';
+                        timerEl.style.color = '#34d399';
+                        timerDisplay.innerHTML = `⏱️ До урока: <span class="time" style="color:#34d399">0с</span>`;
+                    }
                 } else {
-                    timerEl.textContent = '0с';
-                    timerEl.style.color = '#f43f5e';
-                    timerDisplay.innerHTML = `⏱️ До звонка: <span class="time" style="color:#f43f5e">0с</span>`;
+                    timerEl.textContent = '🎉';
+                    timerEl.style.color = '#94a3b8';
+                    timerDisplay.innerHTML = `⏱️ Уроки закончились! <span class="time" style="color:#94a3b8">🎉</span>`;
                 }
-            } else if (!day.isWeekend && nextIdx !== -1) {
-                const startTime = bellSchedule[nextIdx].start;
-                const diff = getTimeDiff(startTime, now);
-                if (diff > 0) {
-                    timerEl.textContent = formatTimeSmart(diff);
-                    timerEl.style.color = '#34d399';
-                    timerDisplay.innerHTML = `⏱️ До урока: <span class="time" style="color:#34d399">${timerEl.textContent}</span>`;
-                } else {
-                    timerEl.textContent = '0с';
-                    timerEl.style.color = '#34d399';
-                    timerDisplay.innerHTML = `⏱️ До урока: <span class="time" style="color:#34d399">0с</span>`;
-                }
-            } else if (day.isWeekend) {
+            } else if (day.isWeekend && isToday) {
                 timerEl.textContent = '🎉';
                 timerEl.style.color = '#94a3b8';
                 timerDisplay.innerHTML = `⏱️ Выходные! <span class="time" style="color:#94a3b8">🎉</span>`;
             } else {
-                timerEl.textContent = '🎉';
-                timerEl.style.color = '#94a3b8';
-                timerDisplay.innerHTML = `⏱️ Уроки закончились! <span class="time" style="color:#94a3b8">🎉</span>`;
+                // Выбран не сегодняшний день
+                timerEl.textContent = '';
+                timerDisplay.innerHTML = `📅 Расписание на ${day.name}`;
             }
 
             // --- ОБНОВЛЯЕМ РАСПИСАНИЕ ---
-            if (dayIndex === renderedDay && !day.isWeekend) {
+            if (dayIndex === renderedDay && !day.isWeekend && isToday) {
                 updateDynamicElements(currentIdx, now);
                 return;
             }
@@ -809,8 +822,8 @@
             // --- БУДНИ ---
             let html = '';
 
-            // --- СЕЙЧАС ПЕРЕМЕНА ИЛИ ОБЕД ---
-            if (currentIdx === -1 && nextIdx !== -1 && isToday) {
+            // --- СЕЙЧАС ПЕРЕМЕНА ИЛИ ОБЕД (только если сегодня) ---
+            if (isToday && currentIdx === -1 && nextIdx !== -1) {
                 const nextLesson = bellSchedule[nextIdx];
                 const timeLeft = getTimeDiff(nextLesson.start, now);
                 const isLunch = nextLesson.type === 'lunch';
@@ -862,7 +875,6 @@
             const lunchSlot = bellSchedule.find(s => s.type === 'lunch');
             if (lunchSlot) {
                 const isCurrent = (isToday && bellSchedule.indexOf(lunchSlot) === currentIdx);
-                const isNext = (isToday && bellSchedule.indexOf(lunchSlot) === nextIdx);
                 const timeRange = `${lunchSlot.start} – ${lunchSlot.end}`;
 
                 let progress = 0;
@@ -1080,7 +1092,6 @@
         dayBtns.forEach((btn, i) => btn.addEventListener('click', () => setDay(i)));
 
         const todayIndex = getTodayIndex();
-        // Если сегодня суббота (5) или воскресенье (6) — показываем их
         setDay(todayIndex >= 0 && todayIndex <= 6 ? todayIndex : 0);
 
         // ============================================================
