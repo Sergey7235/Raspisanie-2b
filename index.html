@@ -23,21 +23,15 @@
             overflow: hidden;
             height: 100vh;
         }
-        /* СВЕТЛАЯ ТЕМА */
-        body.light {
-            background: linear-gradient(180deg, #bae6fd 0%, #f0f9ff 50%, #ffffff 100%);
-        }
+        body.light { background: linear-gradient(180deg, #bae6fd 0%, #f0f9ff 50%, #ffffff 100%); }
         body.light::before {
             content: '☀️';
             position: fixed;
-            top: 4px;
-            right: 12px;
+            top: 4px; right: 12px;
             font-size: 2.8rem;
             filter: drop-shadow(0 0 30px #fbbf24);
             animation: spin 20s linear infinite;
-            z-index: 0;
-            opacity: 0.5;
-            pointer-events: none;
+            z-index: 0; opacity: 0.5; pointer-events: none;
         }
         @keyframes spin {
             0% { transform: rotate(0deg) scale(1); }
@@ -59,7 +53,6 @@
             0% { transform: translateX(0); }
             100% { transform: translateX(70px); }
         }
-        /* ТЁМНАЯ ТЕМА */
         body.dark {
             background: linear-gradient(180deg, #0b0f1a 0%, #1a1a3e 50%, #0f172a 100%);
             color: #f1f5f9;
@@ -67,13 +60,10 @@
         body.dark::before {
             content: '🌙';
             position: fixed;
-            top: 6px;
-            right: 14px;
+            top: 6px; right: 14px;
             font-size: 2.8rem;
             filter: drop-shadow(0 0 30px #fbbf24);
-            z-index: 0;
-            opacity: 0.5;
-            pointer-events: none;
+            z-index: 0; opacity: 0.5; pointer-events: none;
             animation: moonGlow 4s ease-in-out infinite alternate;
         }
         @keyframes moonGlow {
@@ -100,7 +90,6 @@
             0% { opacity: 0.2; transform: scale(0.8); }
             100% { opacity: 0.8; transform: scale(1.2); }
         }
-        /* ПАНЕЛЬ УПРАВЛЕНИЯ */
         .control-bar {
             display: flex;
             justify-content: flex-end;
@@ -133,7 +122,6 @@
         }
         .control-btn:hover { transform: scale(1.03); }
         .control-btn:active { transform: scale(0.94); }
-        /* ШАПКА */
         .header {
             text-align: center;
             padding: 2px 0 2px;
@@ -186,7 +174,6 @@
             background: rgba(255,255,255,0.06);
             color: #94a3b8;
         }
-        /* ИНФО-ПАНЕЛЬ */
         .info-panel {
             display: flex;
             justify-content: space-between;
@@ -219,7 +206,6 @@
             color: #f43f5e;
         }
         body.dark .info-panel .timer .time { color: #f87171; }
-        /* ДНИ */
         .day-tabs {
             display: flex;
             gap: 4px;
@@ -263,7 +249,6 @@
             box-shadow: 0 0 30px rgba(251, 191, 36, 0.6);
         }
         .day-btn:active { transform: scale(0.94); }
-        /* КОНТЕЙНЕР УРОКОВ */
         #scheduleContainer {
             flex: 1 1 auto;
             overflow-y: auto;
@@ -274,29 +259,33 @@
         }
         .schedule-card { display: none; }
         .schedule-card.active { display: block; }
+
+        /* --- УРОКИ (БОЛЬШИЕ ПЛАШКИ) --- */
         .lesson-item {
-            border-radius: 10px;
-            padding: 5px 10px;
-            margin-bottom: 3px;
+            border-radius: 14px;
+            padding: 10px 14px;
+            margin-bottom: 6px;
             display: flex;
             align-items: center;
-            gap: 6px;
-            border-left: 4px solid #fbbf24;
-            transition: 0.15s;
+            gap: 10px;
+            border-left: 5px solid #fbbf24;
+            transition: 0.2s;
             cursor: pointer;
-            background: rgba(255,255,255,0.75);
+            background: rgba(255,255,255,0.8);
             backdrop-filter: blur(4px);
-            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
             opacity: 0;
             transform: translateX(-16px);
             animation: popIn 0.25s ease forwards;
+            position: relative;
+            overflow: hidden;
         }
         body.dark .lesson-item {
-            background: rgba(30, 41, 59, 0.85);
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            background: rgba(30, 41, 59, 0.9);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
-        .lesson-item:active { transform: scale(0.97); background: rgba(255,255,255,0.9); }
-        body.dark .lesson-item:active { background: #2d3a4f; }
+        .lesson-item:active { transform: scale(0.97); }
+        /* Анимация появления */
         @keyframes popIn {
             0% { opacity: 0; transform: translateX(-16px) scale(0.95); }
             100% { opacity: 1; transform: translateX(0) scale(1); }
@@ -309,35 +298,78 @@
         .lesson-item:nth-child(6) { animation-delay: 0.17s; }
         .lesson-item:nth-child(7) { animation-delay: 0.20s; }
         .lesson-item:nth-child(8) { animation-delay: 0.23s; }
+
+        /* Текущий урок */
+        .lesson-item.current-lesson {
+            border-left-color: #22c55e !important;
+            border: 2px solid #22c55e;
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+        }
+        body.dark .lesson-item.current-lesson {
+            box-shadow: 0 0 30px rgba(34, 197, 94, 0.5);
+        }
+
+        /* Индикатор времени */
+        .lesson-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            background: #22c55e;
+            transition: width 0.5s linear;
+            border-radius: 0 2px 0 0;
+        }
+        body.dark .lesson-progress {
+            background: #4ade80;
+        }
+
         .lesson-number {
             background: #e2e8f0;
             color: #475569;
-            width: 18px;
-            height: 18px;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 800;
-            font-size: 0.55rem;
+            font-size: 0.7rem;
             flex-shrink: 0;
         }
         body.dark .lesson-number {
             background: #334155;
             color: #cbd5e1;
         }
-        .lesson-icon { font-size: 1rem; width: 26px; text-align: center; flex-shrink: 0; }
+        .lesson-icon { font-size: 1.4rem; width: 32px; text-align: center; flex-shrink: 0; }
         .lesson-info { flex: 1; min-width: 0; }
         .lesson-name {
-            font-size: 0.75rem;
+            font-size: 0.9rem;
             font-weight: 700;
             letter-spacing: 0.2px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        .lesson-sub { font-size: 0.5rem; color: #94a3b8; margin-top: 1px; font-weight: 500; }
-        /* НИЖНИЙ БЛОК */
+        .lesson-sub {
+            font-size: 0.55rem;
+            color: #94a3b8;
+            margin-top: 1px;
+            font-weight: 500;
+        }
+        .lesson-time {
+            font-size: 0.6rem;
+            font-weight: 600;
+            color: #64748b;
+            background: rgba(0,0,0,0.05);
+            padding: 2px 8px;
+            border-radius: 20px;
+            white-space: nowrap;
+        }
+        body.dark .lesson-time {
+            color: #94a3b8;
+            background: rgba(255,255,255,0.05);
+        }
+
         .bottom-block {
             display: flex;
             flex-direction: column;
@@ -413,7 +445,6 @@
             color: #f1f5f9;
         }
         .bottom-actions .action-btn:active { transform: scale(0.94); }
-        /* ЦВЕТА БОРДЕРОВ */
         .math { border-color: #f87171; }
         .rus { border-color: #60a5fa; }
         .lit { border-color: #fbbf24; }
@@ -441,7 +472,6 @@
         body.dark .extra { border-color: #fbbf24; }
         body.dark .circle { border-color: #e879f9; }
         #scheduleContainer::-webkit-scrollbar { width: 0; }
-        /* PULL-TO-REFRESH */
         .pull-indicator {
             text-align: center;
             font-size: 0.6rem;
@@ -453,9 +483,7 @@
             z-index: 2;
             height: 18px;
         }
-        .pull-indicator.show {
-            opacity: 1;
-        }
+        .pull-indicator.show { opacity: 1; }
         @media print {
             .no-print { display: none !important; }
             body { background: #fff !important; color: #000 !important; overflow: visible !important; height: auto !important; }
@@ -467,11 +495,9 @@
 </head>
 <body class="light">
 
-    <!-- Облака (светлая тема) -->
     <div class="cloud cloud1">☁️</div>
     <div class="cloud cloud2">☁️</div>
     <div class="cloud cloud3">☁️</div>
-    <!-- Звёзды (тёмная тема) -->
     <div class="star">✦</div>
     <div class="star">✦</div>
     <div class="star">✦</div>
@@ -493,13 +519,11 @@
         </div>
     </div>
 
-    <!-- Инфо-панель: погода + таймер -->
     <div class="info-panel">
         <div class="weather" id="weatherDisplay">🌤️ Тюмень: загрузка...</div>
         <div class="timer" id="timerDisplay">⏱️ До звонка: <span class="time" id="timerValue">--:--</span></div>
     </div>
 
-    <!-- Pull-to-refresh индикатор -->
     <div class="pull-indicator" id="pullIndicator">⬇️ Потяни, чтобы обновить</div>
 
     <div class="day-tabs" id="dayTabs">
@@ -588,34 +612,140 @@
         });
 
         // ============================================================
-        // 3. ОТРИСОВКА ДНЯ
+        // 3. РАСПИСАНИЕ ЗВОНКОВ
+        // ============================================================
+        const bellSchedule = [
+            { start: '12:40', end: '13:25' },
+            { start: '13:35', end: '14:20' },
+            { start: '14:30', end: '15:15' },
+            { start: '15:25', end: '16:10' },
+            { start: '16:20', end: '17:05' },
+            { start: '17:15', end: '18:00' },
+        ];
+
+        function getCurrentLessonIndex() {
+            const now = new Date();
+            const h = now.getHours().toString().padStart(2, '0');
+            const m = now.getMinutes().toString().padStart(2, '0');
+            const timeStr = h + ':' + m;
+            let currentIdx = -1;
+            let nextIdx = -1;
+            for (let i = 0; i < bellSchedule.length; i++) {
+                const s = bellSchedule[i].start;
+                const e = bellSchedule[i].end;
+                if (timeStr >= s && timeStr < e) {
+                    currentIdx = i;
+                    nextIdx = (i + 1 < bellSchedule.length) ? i + 1 : -1;
+                    break;
+                }
+                if (timeStr < s) {
+                    nextIdx = i;
+                    break;
+                }
+            }
+            return { currentIdx, nextIdx };
+        }
+
+        function getTimeDiff(targetTimeStr, now) {
+            const parts = targetTimeStr.split(':');
+            const target = new Date(now);
+            target.setHours(parseInt(parts[0]), parseInt(parts[1]), 0);
+            return (target - now) / 1000;
+        }
+
+        // ============================================================
+        // 4. ОТРИСОВКА ДНЯ (с индикатором времени)
         // ============================================================
         const container = document.getElementById('scheduleContainer');
         const lessonCountEl = document.getElementById('lessonCount');
 
         function renderDay(index) {
             const day = days[index];
+            const { currentIdx, nextIdx } = getCurrentLessonIndex();
+            const now = new Date();
+
             let html = `<div class="schedule-card active">`;
+
+            // Если сейчас перемена и нет текущего урока — показываем специальный блок
+            if (currentIdx === -1 && nextIdx !== -1 && index === getTodayIndex()) {
+                const nextLesson = bellSchedule[nextIdx];
+                const timeLeft = getTimeDiff(nextLesson.start, now);
+                const mins = Math.floor(timeLeft / 60);
+                const secs = Math.floor(timeLeft % 60);
+                html += `
+                    <div class="lesson-item current-lesson" style="border-left-color: #f59e0b !important; border-color: #f59e0b !important;">
+                        <div class="lesson-icon">⌛</div>
+                        <div class="lesson-info">
+                            <div class="lesson-name">Перемена</div>
+                            <div class="lesson-sub">Следующий урок через ${mins} мин ${secs} сек</div>
+                        </div>
+                        <div class="lesson-time">⏳ ${mins}:${String(secs).padStart(2, '0')}</div>
+                    </div>
+                `;
+            }
+
             day.lessons.forEach((lesson, i) => {
                 const tag = lesson.name.includes('платная') ? '⭐ ДОП' :
                             lesson.name.includes('кружок') ? '🎯 КРУЖОК' : '';
                 const num = i + 1;
+
+                // Проверяем, идёт ли этот урок сейчас
+                let isCurrent = false;
+                let progress = 0;
+                let timeLeftStr = '';
+                let isPast = false;
+
+                if (index === getTodayIndex() && i === currentIdx) {
+                    isCurrent = true;
+                    const startTime = bellSchedule[i].start;
+                    const endTime = bellSchedule[i].end;
+                    const total = getTimeDiff(endTime, new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0)) -
+                                 getTimeDiff(startTime, new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0));
+                    const elapsed = getTimeDiff(startTime, now);
+                    if (total > 0) {
+                        progress = Math.min((elapsed / total) * 100, 100);
+                    }
+                    const left = getTimeDiff(endTime, now);
+                    if (left > 0) {
+                        const mins = Math.floor(left / 60);
+                        const secs = Math.floor(left % 60);
+                        timeLeftStr = `${mins}мин ${secs}сек`;
+                    } else {
+                        timeLeftStr = '0мин';
+                    }
+                } else if (index === getTodayIndex() && i < currentIdx) {
+                    isPast = true;
+                }
+
+                // Время урока
+                let timeRange = '';
+                if (bellSchedule[i]) {
+                    timeRange = `${bellSchedule[i].start} – ${bellSchedule[i].end}`;
+                }
+
+                const currentClass = isCurrent ? 'current-lesson' : '';
+                const progressBar = isCurrent ? `<div class="lesson-progress" style="width: ${progress}%;"></div>` : '';
+
                 html += `
-                    <div class="lesson-item ${lesson.cls}" data-day="${index}" data-idx="${i}">
+                    <div class="lesson-item ${lesson.cls} ${currentClass}" data-day="${index}" data-idx="${i}" style="${isCurrent ? 'border-color: #22c55e !important;' : ''}">
+                        ${progressBar}
                         <div class="lesson-number">${num}</div>
                         <div class="lesson-icon">${lesson.icon}</div>
                         <div class="lesson-info">
-                            <div class="lesson-name">${lesson.name}</div>
+                            <div class="lesson-name">${lesson.name} ${isCurrent ? '▶️' : ''}</div>
                             ${tag ? `<div class="lesson-sub">${tag}</div>` : ''}
                         </div>
+                        <div class="lesson-time">${isCurrent ? `⏳ ${timeLeftStr}` : timeRange}</div>
                     </div>
                 `;
             });
+
             html += `</div>`;
             container.innerHTML = html;
 
             lessonCountEl.textContent = `📚 ${day.lessons.length} уроков`;
 
+            // Клик по уроку
             document.querySelectorAll('.lesson-item').forEach(el => {
                 el.addEventListener('click', function() {
                     const day = parseInt(this.dataset.day);
@@ -629,8 +759,16 @@
             });
         }
 
+        function getTodayIndex() {
+            const today = new Date().getDay();
+            const weekdays = [1,2,3,4,5,6,0];
+            let idx = weekdays.indexOf(today);
+            if (idx === -1 || idx > 4) idx = 0;
+            return idx;
+        }
+
         // ============================================================
-        // 4. ПЕРЕКЛЮЧЕНИЕ ДНЕЙ
+        // 5. ПЕРЕКЛЮЧЕНИЕ ДНЕЙ
         // ============================================================
         const dayBtns = document.querySelectorAll('.day-btn');
         let currentDay = 0;
@@ -647,14 +785,11 @@
 
         dayBtns.forEach((btn, i) => btn.addEventListener('click', () => setDay(i)));
 
-        const today = new Date().getDay();
-        const weekdays = [1,2,3,4,5,6,0];
-        let todayIndex = weekdays.indexOf(today);
-        if (todayIndex === -1 || todayIndex > 4) todayIndex = 0;
+        const todayIndex = getTodayIndex();
         setDay(todayIndex);
 
         // ============================================================
-        // 5. СВАЙП (исправленный — без конфликтов)
+        // 6. СВАЙП (горизонтальный)
         // ============================================================
         let touchStartX = 0;
         let touchStartY = 0;
@@ -670,7 +805,6 @@
             if (!isSwiping) return;
             const dx = e.touches[0].clientX - touchStartX;
             const dy = e.touches[0].clientY - touchStartY;
-            // Если вертикальное смещение больше горизонтального — блокируем свайп дней
             if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 20) {
                 isSwiping = false;
             }
@@ -690,7 +824,7 @@
         }, { passive: true });
 
         // ============================================================
-        // 6. ТЕМА
+        // 7. ТЕМА
         // ============================================================
         const themeBtn = document.getElementById('themeToggle');
         let isLight = true;
@@ -710,7 +844,7 @@
         } catch(e) {}
 
         // ============================================================
-        // 7. ПОЛНЫЙ ЭКРАН
+        // 8. ПОЛНЫЙ ЭКРАН
         // ============================================================
         const fsBtn = document.getElementById('fullscreenToggle');
         document.addEventListener('DOMContentLoaded', () => {
@@ -730,7 +864,7 @@
         });
 
         // ============================================================
-        // 8. ПОДЕЛИТЬСЯ
+        // 9. ПОДЕЛИТЬСЯ
         // ============================================================
         document.getElementById('shareBtn').addEventListener('click', () => {
             const url = window.location.href;
@@ -753,7 +887,7 @@
         });
 
         // ============================================================
-        // 9. ПОГОДА (Open-Meteo)
+        // 10. ПОГОДА (Open-Meteo)
         // ============================================================
         async function fetchWeather() {
             const weatherEl = document.getElementById('weatherDisplay');
@@ -773,46 +907,14 @@
                 weatherEl.textContent = `${emoji} Тюмень: ${desc}, ${temp}°C`;
             } catch (e) {
                 weatherEl.textContent = '🌤️ Тюмень: --°C';
-                console.log('Ошибка погоды:', e);
             }
         }
         fetchWeather();
         setInterval(fetchWeather, 600000);
 
         // ============================================================
-        // 10. ТАЙМЕР (под ваше расписание)
+        // 11. ТАЙМЕР
         // ============================================================
-        const bellSchedule = [
-            { start: '12:40', end: '13:25' },
-            { start: '13:35', end: '14:20' },
-            { start: '14:30', end: '15:15' },
-            { start: '15:25', end: '16:10' },
-            { start: '16:20', end: '17:05' },
-            { start: '17:15', end: '18:00' },
-        ];
-
-        function getCurrentLesson() {
-            const now = new Date();
-            const h = now.getHours().toString().padStart(2, '0');
-            const m = now.getMinutes().toString().padStart(2, '0');
-            const timeStr = h + ':' + m;
-            let current = null, next = null;
-            for (let i = 0; i < bellSchedule.length; i++) {
-                const s = bellSchedule[i].start;
-                const e = bellSchedule[i].end;
-                if (timeStr >= s && timeStr < e) {
-                    current = bellSchedule[i];
-                    next = (i + 1 < bellSchedule.length) ? bellSchedule[i + 1] : null;
-                    break;
-                }
-                if (timeStr < s) {
-                    next = bellSchedule[i];
-                    break;
-                }
-            }
-            return { current, next };
-        }
-
         function formatTime(seconds) {
             if (seconds < 0) seconds = 0;
             const hrs = Math.floor(seconds / 3600);
@@ -827,39 +929,51 @@
 
         function updateTimer() {
             const now = new Date();
-            const { current, next } = getCurrentLesson();
+            const { currentIdx, nextIdx } = getCurrentLessonIndex();
             const timerEl = document.getElementById('timerValue');
             const timerDisplay = document.getElementById('timerDisplay');
 
-            if (current) {
-                const endParts = current.end.split(':');
-                const endDate = new Date(now);
-                endDate.setHours(parseInt(endParts[0]), parseInt(endParts[1]), 0);
-                let diff = (endDate - now) / 1000;
-                if (diff < 0) diff = 0;
-                timerEl.textContent = formatTime(diff);
-                timerEl.style.color = '#f43f5e';
-                timerDisplay.innerHTML = `⏱️ До звонка: <span class="time" style="color:#f43f5e">${timerEl.textContent}</span>`;
-            } else if (next) {
-                const startParts = next.start.split(':');
-                const startDate = new Date(now);
-                startDate.setHours(parseInt(startParts[0]), parseInt(startParts[1]), 0);
-                let diff = (startDate - now) / 1000;
-                if (diff < 0) diff = 0;
-                timerEl.textContent = formatTime(diff);
-                timerEl.style.color = '#34d399';
-                timerDisplay.innerHTML = `⏱️ До урока: <span class="time" style="color:#34d399">${timerEl.textContent}</span>`;
+            if (currentIdx !== -1) {
+                const endTime = bellSchedule[currentIdx].end;
+                const diff = getTimeDiff(endTime, now);
+                if (diff > 0) {
+                    timerEl.textContent = formatTime(diff);
+                    timerEl.style.color = '#f43f5e';
+                    timerDisplay.innerHTML = `⏱️ До звонка: <span class="time" style="color:#f43f5e">${timerEl.textContent}</span>`;
+                } else {
+                    timerEl.textContent = '0:00';
+                    timerEl.style.color = '#f43f5e';
+                    timerDisplay.innerHTML = `⏱️ До звонка: <span class="time" style="color:#f43f5e">0:00</span>`;
+                }
+            } else if (nextIdx !== -1) {
+                const startTime = bellSchedule[nextIdx].start;
+                const diff = getTimeDiff(startTime, now);
+                if (diff > 0) {
+                    timerEl.textContent = formatTime(diff);
+                    timerEl.style.color = '#34d399';
+                    timerDisplay.innerHTML = `⏱️ До урока: <span class="time" style="color:#34d399">${timerEl.textContent}</span>`;
+                } else {
+                    timerEl.textContent = '0:00';
+                    timerEl.style.color = '#34d399';
+                    timerDisplay.innerHTML = `⏱️ До урока: <span class="time" style="color:#34d399">0:00</span>`;
+                }
             } else {
                 timerEl.textContent = '🎉';
                 timerEl.style.color = '#94a3b8';
                 timerDisplay.innerHTML = `⏱️ Уроки закончились! <span class="time" style="color:#94a3b8">🎉</span>`;
             }
+
+            // Обновляем расписание каждые 30 секунд, чтобы обновить индикаторы
+            if (Math.floor(Date.now() / 30000) > Math.floor((Date.now() - 30000) / 30000)) {
+                renderDay(currentDay);
+            }
         }
+
         updateTimer();
         setInterval(updateTimer, 1000);
 
         // ============================================================
-        // 11. ФАКТ ДНЯ
+        // 12. ФАКТ ДНЯ
         // ============================================================
         const facts = [
             '🧠 У осьминога 3 сердца!',
@@ -877,7 +991,7 @@
         document.getElementById('factBox').textContent = facts[new Date().getDate() % facts.length];
 
         // ============================================================
-        // 12. PULL-TO-REFRESH (только с верхнего края)
+        // 13. PULL-TO-REFRESH
         // ============================================================
         let pullStartY2 = 0;
         let pullOffset2 = 0;
@@ -920,7 +1034,7 @@
         }, { passive: true });
 
         // ============================================================
-        // 13. ЭКСПОРТ В PDF
+        // 14. ЭКСПОРТ В PDF
         // ============================================================
         document.getElementById('exportPdf').addEventListener('click', function() {
             const element = document.getElementById('scheduleContainer');
