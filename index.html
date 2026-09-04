@@ -392,7 +392,7 @@
             background: rgba(255,255,255,0.05);
         }
 
-        /* --- НИЖНИЙ БЛОК (поднят выше) --- */
+        /* --- НИЖНИЙ БЛОК ПОДНЯТ --- */
         .bottom-block {
             display: flex;
             flex-direction: column;
@@ -426,6 +426,7 @@
         .tooltip-box .icon { font-size: 0.9rem; flex-shrink: 0; }
         .tooltip-box .text { flex: 1; }
         .tooltip-box .text strong { color: #fbbf24; }
+
         .bottom-actions {
             display: flex;
             gap: 4px;
@@ -611,12 +612,15 @@
         }];
 
         // ============================================================
-        // 2. ПОДСКАЗКИ
+        // 2. ПОДСКАЗКИ (исправлено!)
         // ============================================================
         const tipMap = {};
-        days.forEach((d, di) => {
-            d.lessons.forEach((l, li) => {
-                tipMap[di + '-' + li] = l.tip;
+        days.forEach((day, dayIdx) => {
+            day.lessons.forEach((lesson, lessonIdx) => {
+                // Ключ: день-индекс_урока_в_расписании
+                // Но нам нужен ключ по реальному порядку в расписании (с учётом обеда)
+                // Проще: сохраним по индексу урока в массиве lessons
+                tipMap[dayIdx + '-' + lessonIdx] = lesson.tip;
             });
         });
 
@@ -691,8 +695,6 @@
         // ============================================================
         const container = document.getElementById('scheduleContainer');
         const lessonCountEl = document.getElementById('lessonCount');
-        const timerDisplay = document.getElementById('timerDisplay');
-        const timerValue = document.getElementById('timerValue');
 
         function renderSchedule() {
             const dayIndex = currentDay;
@@ -732,7 +734,6 @@
 
                 if (isLunchSlot) {
                     const isCurrent = (dayIndex === getTodayIndex() && i === currentIdx);
-                    const isPast = (dayIndex === getTodayIndex() && i < currentIdx);
                     const timeRange = `${slot.start} – ${slot.end}`;
 
                     let progress = 0;
@@ -773,6 +774,7 @@
                 // --- ОБЫЧНЫЙ УРОК ---
                 if (lessonIndex >= day.lessons.length) break;
                 const lesson = day.lessons[lessonIndex];
+                const lessonRealIndex = lessonIndex; // для tipMap
                 lessonIndex++;
 
                 const tag = lesson.name.includes('платная') ? '⭐ ДОП' :
@@ -780,7 +782,6 @@
                 const num = lessonIndex;
 
                 const isCurrent = (dayIndex === getTodayIndex() && i === currentIdx);
-                const isPast = (dayIndex === getTodayIndex() && i < currentIdx);
 
                 let progress = 0;
                 let timeLeftStr = '';
@@ -805,7 +806,10 @@
                 const progressBar = isCurrent ? `<div class="lesson-progress" style="width: ${progress}%;"></div>` : '';
 
                 html += `
-                    <div class="lesson-item ${lesson.cls} ${currentClass}" data-day="${dayIndex}" data-idx="${i}" style="${isCurrent ? 'border-color: #22c55e !important;' : ''}">
+                    <div class="lesson-item ${lesson.cls} ${currentClass}" 
+                         data-day="${dayIndex}" 
+                         data-lesson-index="${lessonRealIndex}" 
+                         style="${isCurrent ? 'border-color: #22c55e !important;' : ''}">
                         ${progressBar}
                         <div class="lesson-number">${num}</div>
                         <div class="lesson-icon">${lesson.icon}</div>
@@ -825,13 +829,13 @@
             const totalLessons = day.lessons.length;
             lessonCountEl.textContent = `📚 ${totalLessons} уроков`;
 
-            // --- КЛИК ПО УРОКУ ---
+            // --- КЛИК ПО УРОКУ (исправлено!) ---
             document.querySelectorAll('.lesson-item:not(.lunch)').forEach(el => {
                 el.addEventListener('click', function() {
-                    const day = parseInt(this.dataset.day);
-                    const idx = parseInt(this.dataset.idx);
-                    const tip = tipMap[day + '-' + idx] || 'Будь молодцом!';
-                    const name = days[day].lessons[idx].name;
+                    const dayIdx = parseInt(this.dataset.day);
+                    const lessonIdx = parseInt(this.dataset.lessonIndex);
+                    const tip = tipMap[dayIdx + '-' + lessonIdx] || 'Будь молодцом!';
+                    const name = days[dayIdx].lessons[lessonIdx].name;
                     document.querySelector('.tooltip-box .text').innerHTML =
                         `<strong>${name}</strong> — ${tip}`;
                     document.querySelector('.tooltip-box .icon').textContent = '💡';
@@ -878,8 +882,8 @@
                 timerDisplay.innerHTML = `⏱️ Уроки закончились! <span class="time" style="color:#94a3b8">🎉</span>`;
             }
 
-            // Обновляем расписание каждые 30 секунд (для индикаторов)
-            if (Math.floor(Date.now() / 30000) > Math.floor((Date.now() - 30000) / 30000)) {
+            // Обновляем расписание каждые 10 секунд (для индикаторов и анимации)
+            if (Math.floor(Date.now() / 10000) > Math.floor((Date.now() - 10000) / 10000)) {
                 renderSchedule();
             }
         }
@@ -978,7 +982,6 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             updateFullscreenButton();
-            // Не включаем автоматически, чтобы пользователь сам решал
         });
 
         fsBtn.addEventListener('click', () => {
@@ -1041,19 +1044,14 @@
         setInterval(fetchWeather, 600000);
 
         // ============================================================
-        // 13. ФАКТ ДНЯ (убрали из нижней панели, оставили только подсказку)
-        // ============================================================
-        // Факт дня теперь не выводится, так как вы его убрали из макета
-
-        // ============================================================
-        // 14. ЗАПУСК ТАЙМЕРОВ И ОБНОВЛЕНИЙ
+        // 13. ЗАПУСК ТАЙМЕРОВ И ОБНОВЛЕНИЙ
         // ============================================================
         // Запускаем таймер и обновление UI каждую секунду
         updateTimerAndUI();
         setInterval(updateTimerAndUI, 1000);
 
         // ============================================================
-        // 15. PULL-TO-REFRESH (оставлен для возможности принудительно обновить)
+        // 14. PULL-TO-REFRESH
         // ============================================================
         let pullStartY2 = 0;
         let pullOffset2 = 0;
@@ -1096,7 +1094,7 @@
         }, { passive: true });
 
         // ============================================================
-        // 16. ЭКСПОРТ В PDF
+        // 15. ЭКСПОРТ В PDF
         // ============================================================
         document.getElementById('exportPdf').addEventListener('click', function() {
             const element = document.getElementById('scheduleContainer');
