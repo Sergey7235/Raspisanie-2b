@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>2Б Расписание</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body {
@@ -15,7 +15,7 @@
         body {
             display: flex;
             flex-direction: column;
-            padding: 8px 10px 10px;
+            padding: 6px 10px 8px;
             transition: background 0.5s, color 0.5s;
             background: #f0f9ff;
             color: #1e293b;
@@ -106,7 +106,7 @@
             justify-content: flex-end;
             align-items: center;
             gap: 6px;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
             position: relative;
             z-index: 2;
             flex-shrink: 0;
@@ -116,8 +116,8 @@
             backdrop-filter: blur(8px);
             border: none;
             border-radius: 30px;
-            padding: 4px 10px;
-            font-size: 0.65rem;
+            padding: 3px 10px;
+            font-size: 0.6rem;
             font-weight: 700;
             color: #1e293b;
             cursor: pointer;
@@ -136,15 +136,15 @@
         /* ШАПКА */
         .header {
             text-align: center;
-            padding: 4px 0 2px;
+            padding: 2px 0 2px;
             border-bottom: 2px dashed #fbbf24;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
             position: relative;
             z-index: 2;
             flex-shrink: 0;
         }
         .header h1 {
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             font-weight: 900;
             background: linear-gradient(45deg, #f97316, #eab308, #22d3ee);
             -webkit-background-clip: text;
@@ -161,25 +161,25 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             flex-wrap: wrap;
-            margin-top: 2px;
+            margin-top: 1px;
         }
         .header .sub .badge {
-            font-size: 0.6rem;
+            font-size: 0.55rem;
             font-weight: 700;
-            padding: 2px 12px;
+            padding: 1px 12px;
             border-radius: 30px;
             background: #f43f5e;
             color: #fff;
             box-shadow: 0 2px 12px rgba(244, 63, 94, 0.3);
         }
         .header .sub .count {
-            font-size: 0.6rem;
+            font-size: 0.55rem;
             font-weight: 600;
             color: #64748b;
             background: rgba(255,255,255,0.5);
-            padding: 2px 12px;
+            padding: 1px 12px;
             border-radius: 30px;
         }
         body.dark .header .sub .count {
@@ -191,18 +191,18 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 8px;
-            margin-bottom: 4px;
+            gap: 6px;
+            margin-bottom: 2px;
             flex-shrink: 0;
             position: relative;
             z-index: 2;
-            font-size: 0.65rem;
+            font-size: 0.55rem;
             font-weight: 600;
         }
         .info-panel .weather, .info-panel .timer {
             background: rgba(255,255,255,0.5);
             backdrop-filter: blur(4px);
-            padding: 3px 10px;
+            padding: 2px 8px;
             border-radius: 30px;
             display: flex;
             align-items: center;
@@ -222,9 +222,9 @@
         /* ДНИ */
         .day-tabs {
             display: flex;
-            gap: 5px;
+            gap: 4px;
             overflow-x: auto;
-            padding: 2px 0 6px;
+            padding: 1px 0 4px;
             scrollbar-width: none;
             position: relative;
             z-index: 2;
@@ -233,13 +233,13 @@
         .day-tabs::-webkit-scrollbar { display: none; }
         .day-btn {
             flex: 0 0 auto;
-            padding: 5px 12px;
+            padding: 4px 10px;
             border-radius: 30px;
             border: none;
             background: rgba(255,255,255,0.6);
             backdrop-filter: blur(4px);
             color: #475569;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-weight: 700;
             cursor: pointer;
             transition: 0.2s;
@@ -253,7 +253,14 @@
         .day-btn.active {
             background: #fbbf24;
             color: #0f172a;
-            box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.4);
+            border: 2px solid #fbbf24;
+        }
+        body.dark .day-btn.active {
+            background: #fbbf24;
+            color: #0f172a;
+            border: 2px solid #fbbf24;
+            box-shadow: 0 0 30px rgba(251, 191, 36, 0.6);
         }
         .day-btn:active { transform: scale(0.94); }
         /* КОНТЕЙНЕР УРОКОВ */
@@ -268,25 +275,25 @@
         .schedule-card { display: none; }
         .schedule-card.active { display: block; }
         .lesson-item {
-            border-radius: 12px;
-            padding: 6px 12px;
-            margin-bottom: 4px;
+            border-radius: 10px;
+            padding: 5px 10px;
+            margin-bottom: 3px;
             display: flex;
             align-items: center;
-            gap: 8px;
-            border-left: 5px solid #fbbf24;
+            gap: 6px;
+            border-left: 4px solid #fbbf24;
             transition: 0.15s;
             cursor: pointer;
             background: rgba(255,255,255,0.75);
             backdrop-filter: blur(4px);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
             opacity: 0;
             transform: translateX(-16px);
             animation: popIn 0.25s ease forwards;
         }
         body.dark .lesson-item {
             background: rgba(30, 41, 59, 0.85);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
         }
         .lesson-item:active { transform: scale(0.97); background: rgba(255,255,255,0.9); }
         body.dark .lesson-item:active { background: #2d3a4f; }
@@ -305,24 +312,24 @@
         .lesson-number {
             background: #e2e8f0;
             color: #475569;
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 800;
-            font-size: 0.6rem;
+            font-size: 0.55rem;
             flex-shrink: 0;
         }
         body.dark .lesson-number {
             background: #334155;
             color: #cbd5e1;
         }
-        .lesson-icon { font-size: 1.2rem; width: 30px; text-align: center; flex-shrink: 0; }
+        .lesson-icon { font-size: 1rem; width: 26px; text-align: center; flex-shrink: 0; }
         .lesson-info { flex: 1; min-width: 0; }
         .lesson-name {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 700;
             letter-spacing: 0.2px;
             white-space: nowrap;
@@ -334,46 +341,45 @@
         .bottom-block {
             display: flex;
             flex-direction: column;
-            gap: 4px;
-            margin-top: 4px;
+            gap: 3px;
+            margin-top: 3px;
             flex-shrink: 0;
             position: relative;
             z-index: 2;
+            padding-bottom: 2px;
         }
         .tooltip-box {
-            border-radius: 12px;
-            padding: 8px 12px;
-            border-left: 5px solid #f43f5e;
-            font-size: 0.7rem;
+            border-radius: 10px;
+            padding: 6px 10px;
+            border-left: 4px solid #f43f5e;
+            font-size: 0.65rem;
             line-height: 1.3;
-            min-height: 36px;
+            min-height: 32px;
             transition: 0.3s;
             background: rgba(255,255,255,0.85);
             backdrop-filter: blur(6px);
             color: #1e293b;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
         body.dark .tooltip-box {
             background: rgba(30, 41, 59, 0.9);
             color: #cbd5e1;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
         }
-        .tooltip-box .icon { font-size: 1rem; flex-shrink: 0; }
+        .tooltip-box .icon { font-size: 0.9rem; flex-shrink: 0; }
         .tooltip-box .text { flex: 1; }
         .tooltip-box .text strong { color: #fbbf24; }
-        /* ФАКТ ДНЯ */
         .fact-box {
-            border-radius: 12px;
-            padding: 6px 12px;
-            font-size: 0.65rem;
+            border-radius: 10px;
+            padding: 4px 10px;
+            font-size: 0.6rem;
             text-align: center;
             background: rgba(255,255,255,0.4);
             backdrop-filter: blur(4px);
             color: #475569;
-            margin-top: 2px;
         }
         body.dark .fact-box {
             background: rgba(255,255,255,0.05);
@@ -381,7 +387,7 @@
         }
         .bottom-actions {
             display: flex;
-            gap: 6px;
+            gap: 4px;
             flex-shrink: 0;
         }
         .bottom-actions .action-btn {
@@ -390,8 +396,8 @@
             backdrop-filter: blur(4px);
             border: none;
             border-radius: 30px;
-            padding: 4px 10px;
-            font-size: 0.6rem;
+            padding: 3px 8px;
+            font-size: 0.55rem;
             font-weight: 600;
             color: #1e293b;
             cursor: pointer;
@@ -399,7 +405,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 4px;
+            gap: 3px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.04);
         }
         body.dark .bottom-actions .action-btn {
@@ -438,13 +444,14 @@
         /* PULL-TO-REFRESH */
         .pull-indicator {
             text-align: center;
-            font-size: 0.7rem;
+            font-size: 0.6rem;
             color: #94a3b8;
-            padding: 4px 0;
+            padding: 2px 0;
             opacity: 0;
             transition: opacity 0.3s;
             position: relative;
             z-index: 2;
+            height: 18px;
         }
         .pull-indicator.show {
             opacity: 1;
@@ -512,7 +519,7 @@
         </div>
         <div class="fact-box" id="factBox">🧠 Факт дня: ...</div>
         <div class="bottom-actions">
-            <button class="action-btn" id="shareBtn"><span class="emoji">📤</span> Поделиться</button>
+            <button class="action-btn" id="shareBtn"><span>📤</span> Поделиться</button>
         </div>
     </div>
 
@@ -647,17 +654,40 @@
         setDay(todayIndex);
 
         // ============================================================
-        // 5. СВАЙП
+        // 5. СВАЙП (исправленный — без конфликтов)
         // ============================================================
-        let startX = 0;
-        container.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; });
-        container.addEventListener('touchend', (e) => {
-            const diff = startX - e.changedTouches[0].clientX;
-            if (Math.abs(diff) > 40) {
-                if (diff > 0 && currentDay < 4) setDay(currentDay + 1);
-                else if (diff < 0 && currentDay > 0) setDay(currentDay - 1);
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let isSwiping = false;
+
+        container.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+            isSwiping = true;
+        }, { passive: true });
+
+        container.addEventListener('touchmove', (e) => {
+            if (!isSwiping) return;
+            const dx = e.touches[0].clientX - touchStartX;
+            const dy = e.touches[0].clientY - touchStartY;
+            // Если вертикальное смещение больше горизонтального — блокируем свайп дней
+            if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 20) {
+                isSwiping = false;
             }
-        });
+        }, { passive: true });
+
+        container.addEventListener('touchend', (e) => {
+            if (!isSwiping) {
+                isSwiping = false;
+                return;
+            }
+            const dx = e.changedTouches[0].clientX - touchStartX;
+            if (Math.abs(dx) > 40) {
+                if (dx > 0 && currentDay > 0) setDay(currentDay - 1);
+                else if (dx < 0 && currentDay < 4) setDay(currentDay + 1);
+            }
+            isSwiping = false;
+        }, { passive: true });
 
         // ============================================================
         // 6. ТЕМА
@@ -723,29 +753,23 @@
         });
 
         // ============================================================
-        // 9. ПОГОДА (Тюмень)
+        // 9. ПОГОДА (Open-Meteo)
         // ============================================================
         async function fetchWeather() {
             const weatherEl = document.getElementById('weatherDisplay');
             try {
-                const res = await fetch('https://wttr.in/Tyumen?format=j1&lang=ru');
+                const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=57.15&longitude=65.53&current_weather=true&timezone=Asia/Yekaterinburg');
                 if (!res.ok) throw new Error('Ошибка сети');
                 const data = await res.json();
-                if (!data || !data.current_condition || !data.current_condition[0]) {
-                    throw new Error('Нет данных о погоде');
-                }
-                const temp = data.current_condition[0].temp_C;
-                const desc = data.current_condition[0].weatherDesc[0].value;
-                const icon = parseInt(data.current_condition[0].weatherCode);
+                const temp = Math.round(data.current_weather.temperature);
+                const code = data.current_weather.weathercode;
                 let emoji = '🌤️';
-                if (icon >= 200 && icon < 300) emoji = '⛈️';
-                else if (icon >= 300 && icon < 400) emoji = '🌧️';
-                else if (icon >= 500 && icon < 600) emoji = '🌧️';
-                else if (icon >= 600 && icon < 700) emoji = '❄️';
-                else if (icon >= 700 && icon < 800) emoji = '🌫️';
-                else if (icon === 800) emoji = '☀️';
-                else if (icon === 801) emoji = '🌤️';
-                else if (icon >= 802 && icon < 900) emoji = '☁️';
+                let desc = 'ясно';
+                if (code === 0) { emoji = '☀️'; desc = 'ясно'; }
+                else if (code >= 1 && code <= 3) { emoji = '⛅'; desc = 'облачно'; }
+                else if (code >= 51 && code <= 67) { emoji = '🌧️'; desc = 'дождь'; }
+                else if (code >= 71 && code <= 77) { emoji = '❄️'; desc = 'снег'; }
+                else if (code >= 80 && code <= 99) { emoji = '⛈️'; desc = 'гроза'; }
                 weatherEl.textContent = `${emoji} Тюмень: ${desc}, ${temp}°C`;
             } catch (e) {
                 weatherEl.textContent = '🌤️ Тюмень: --°C';
@@ -847,37 +871,41 @@
             '🧠 У жирафа самое большое сердце — до 12 кг!',
             '🧠 За сутки человек говорит около 7000 слов!',
             '🧠 Дельфины дают друг другу имена!',
+            '🧠 У страуса глаза больше, чем мозг!',
+            '🧠 Медузы не имеют мозга и сердца!',
         ];
         document.getElementById('factBox').textContent = facts[new Date().getDate() % facts.length];
 
         // ============================================================
-        // 12. PULL-TO-REFRESH (свайп вниз)
+        // 12. PULL-TO-REFRESH (только с верхнего края)
         // ============================================================
-        let pullStartY = 0;
-        let pullOffset = 0;
+        let pullStartY2 = 0;
+        let pullOffset2 = 0;
         const pullIndicator = document.getElementById('pullIndicator');
+        let isPullActive = false;
 
         document.addEventListener('touchstart', (e) => {
             if (window.scrollY === 0) {
-                pullStartY = e.touches[0].clientY;
+                pullStartY2 = e.touches[0].clientY;
+                isPullActive = true;
             }
         }, { passive: true });
 
         document.addEventListener('touchmove', (e) => {
-            if (window.scrollY === 0 && pullStartY > 0) {
-                const delta = e.touches[0].clientY - pullStartY;
-                if (delta > 30) {
-                    pullIndicator.classList.add('show');
-                    pullIndicator.textContent = '⬇️ Отпусти, чтобы обновить';
-                } else {
-                    pullIndicator.textContent = '⬇️ Потяни, чтобы обновить';
-                }
-                pullOffset = delta;
+            if (!isPullActive || window.scrollY > 0) return;
+            const delta = e.touches[0].clientY - pullStartY2;
+            if (delta > 20) {
+                pullIndicator.classList.add('show');
+                pullIndicator.textContent = '⬇️ Отпусти, чтобы обновить';
+                pullOffset2 = delta;
+            } else {
+                pullIndicator.textContent = '⬇️ Потяни, чтобы обновить';
+                pullOffset2 = 0;
             }
         }, { passive: true });
 
         document.addEventListener('touchend', () => {
-            if (pullOffset > 30) {
+            if (pullOffset2 > 30) {
                 pullIndicator.textContent = '🔄 Обновляем...';
                 setTimeout(() => {
                     window.location.reload();
@@ -886,8 +914,9 @@
                 pullIndicator.classList.remove('show');
                 pullIndicator.textContent = '⬇️ Потяни, чтобы обновить';
             }
-            pullStartY = 0;
-            pullOffset = 0;
+            pullStartY2 = 0;
+            pullOffset2 = 0;
+            isPullActive = false;
         }, { passive: true });
 
         // ============================================================
