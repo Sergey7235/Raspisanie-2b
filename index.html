@@ -260,7 +260,7 @@
         .schedule-card { display: none; }
         .schedule-card.active { display: block; }
 
-        /* --- УРОКИ (БОЛЬШИЕ ПЛАШКИ) --- */
+        /* --- УРОКИ --- */
         .lesson-item {
             border-radius: 14px;
             padding: 10px 14px;
@@ -285,7 +285,6 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
         .lesson-item:active { transform: scale(0.97); }
-        /* Анимация появления */
         @keyframes popIn {
             0% { opacity: 0; transform: translateX(-16px) scale(0.95); }
             100% { opacity: 1; transform: translateX(0) scale(1); }
@@ -297,9 +296,31 @@
         .lesson-item:nth-child(5) { animation-delay: 0.14s; }
         .lesson-item:nth-child(6) { animation-delay: 0.17s; }
         .lesson-item:nth-child(7) { animation-delay: 0.20s; }
-        .lesson-item:nth-child(8) { animation-delay: 0.23s; }
 
-        /* Текущий урок */
+        /* Обед */
+        .lesson-item.lunch {
+            border-left-color: #f59e0b !important;
+            border: 2px solid #f59e0b;
+            background: rgba(251, 191, 36, 0.15);
+            animation: lunchWobble 1.5s ease-in-out infinite;
+            cursor: default;
+        }
+        body.dark .lesson-item.lunch {
+            background: rgba(251, 191, 36, 0.2);
+        }
+        @keyframes lunchWobble {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.02) rotate(-1deg); }
+            75% { transform: scale(1.02) rotate(1deg); }
+        }
+        .lesson-item.lunch .lesson-icon {
+            animation: lunchIcon 2s ease-in-out infinite;
+        }
+        @keyframes lunchIcon {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.2) rotate(10deg); }
+        }
+
         .lesson-item.current-lesson {
             border-left-color: #22c55e !important;
             border: 2px solid #22c55e;
@@ -308,8 +329,6 @@
         body.dark .lesson-item.current-lesson {
             box-shadow: 0 0 30px rgba(34, 197, 94, 0.5);
         }
-
-        /* Индикатор времени */
         .lesson-progress {
             position: absolute;
             bottom: 0;
@@ -321,6 +340,9 @@
         }
         body.dark .lesson-progress {
             background: #4ade80;
+        }
+        .lesson-item.lunch .lesson-progress {
+            background: #f59e0b;
         }
 
         .lesson-number {
@@ -612,15 +634,16 @@
         });
 
         // ============================================================
-        // 3. РАСПИСАНИЕ ЗВОНКОВ
+        // 3. РАСПИСАНИЕ ЗВОНКОВ (с ОБЕДОМ)
         // ============================================================
         const bellSchedule = [
-            { start: '12:40', end: '13:25' },
-            { start: '13:35', end: '14:20' },
-            { start: '14:30', end: '15:15' },
-            { start: '15:25', end: '16:10' },
-            { start: '16:20', end: '17:05' },
-            { start: '17:15', end: '18:00' },
+            { start: '13:30', end: '14:10', type: 'lesson' },
+            { start: '14:20', end: '15:00', type: 'lesson' },
+            { start: '15:20', end: '16:00', type: 'lesson' },
+            { start: '16:00', end: '16:20', type: 'lunch' },   // 🍔 ОБЕД
+            { start: '16:20', end: '17:00', type: 'lesson' },
+            { start: '17:10', end: '17:50', type: 'lesson' },
+            { start: '18:00', end: '18:40', type: 'lesson' },
         ];
 
         function getCurrentLessonIndex() {
@@ -654,7 +677,7 @@
         }
 
         // ============================================================
-        // 4. ОТРИСОВКА ДНЯ (с индикатором времени)
+        // 4. ОТРИСОВКА ДНЯ (с обедом)
         // ============================================================
         const container = document.getElementById('scheduleContainer');
         const lessonCountEl = document.getElementById('lessonCount');
@@ -666,61 +689,106 @@
 
             let html = `<div class="schedule-card active">`;
 
-            // Если сейчас перемена и нет текущего урока — показываем специальный блок
+            // Если сейчас перемена (не обед и не урок) — показываем специальный блок
             if (currentIdx === -1 && nextIdx !== -1 && index === getTodayIndex()) {
                 const nextLesson = bellSchedule[nextIdx];
                 const timeLeft = getTimeDiff(nextLesson.start, now);
                 const mins = Math.floor(timeLeft / 60);
                 const secs = Math.floor(timeLeft % 60);
+                const isLunch = nextLesson.type === 'lunch';
+                const icon = isLunch ? '🍔' : '⌛';
+                const title = isLunch ? 'Обед!' : 'Перемена';
+                const sub = isLunch ? 'Вкуснятина!' : `Следующий урок через ${mins} мин ${secs} сек`;
                 html += `
-                    <div class="lesson-item current-lesson" style="border-left-color: #f59e0b !important; border-color: #f59e0b !important;">
-                        <div class="lesson-icon">⌛</div>
+                    <div class="lesson-item current-lesson ${isLunch ? 'lunch' : ''}" style="border-left-color: ${isLunch ? '#f59e0b' : '#22c55e'} !important; border-color: ${isLunch ? '#f59e0b' : '#22c55e'} !important;">
+                        <div class="lesson-icon">${icon}</div>
                         <div class="lesson-info">
-                            <div class="lesson-name">Перемена</div>
-                            <div class="lesson-sub">Следующий урок через ${mins} мин ${secs} сек</div>
+                            <div class="lesson-name">${title}</div>
+                            <div class="lesson-sub">${sub}</div>
                         </div>
-                        <div class="lesson-time">⏳ ${mins}:${String(secs).padStart(2, '0')}</div>
+                        <div class="lesson-time">${isLunch ? '🍽️' : '⏳'} ${mins}:${String(secs).padStart(2, '0')}</div>
                     </div>
                 `;
             }
 
-            day.lessons.forEach((lesson, i) => {
+            // Рисуем все уроки по порядку
+            const lessonItems = day.lessons;
+            let lessonIndex = 0;
+
+            for (let i = 0; i < bellSchedule.length; i++) {
+                const slot = bellSchedule[i];
+                const isLunchSlot = slot.type === 'lunch';
+
+                if (isLunchSlot) {
+                    // Обед — отдельная плашка
+                    const isCurrent = (index === getTodayIndex() && i === currentIdx);
+                    const isPast = (index === getTodayIndex() && i < currentIdx);
+                    const timeRange = `${slot.start} – ${slot.end}`;
+
+                    let progress = 0;
+                    let timeLeftStr = '';
+                    if (isCurrent) {
+                        const total = getTimeDiff(slot.end, new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0)) -
+                                     getTimeDiff(slot.start, new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0));
+                        const elapsed = getTimeDiff(slot.start, now);
+                        if (total > 0) {
+                            progress = Math.min((elapsed / total) * 100, 100);
+                        }
+                        const left = getTimeDiff(slot.end, now);
+                        if (left > 0) {
+                            const mins = Math.floor(left / 60);
+                            const secs = Math.floor(left % 60);
+                            timeLeftStr = `${mins}мин ${secs}сек`;
+                        }
+                    }
+
+                    const currentClass = isCurrent ? 'current-lesson lunch' : (isPast ? 'lesson-past' : '');
+                    const progressBar = isCurrent ? `<div class="lesson-progress" style="width: ${progress}%;"></div>` : '';
+
+                    html += `
+                        <div class="lesson-item lunch ${currentClass}" style="${isCurrent ? 'border-color: #f59e0b !important;' : ''}">
+                            ${progressBar}
+                            <div class="lesson-number">🍔</div>
+                            <div class="lesson-icon">🍽️</div>
+                            <div class="lesson-info">
+                                <div class="lesson-name">🍔 Обед! Вкуснятина!</div>
+                                <div class="lesson-sub">${isCurrent ? 'Едим и отдыхаем' : 'Время обеда'}</div>
+                            </div>
+                            <div class="lesson-time">${isCurrent ? `⏳ ${timeLeftStr}` : timeRange}</div>
+                        </div>
+                    `;
+                    continue;
+                }
+
+                // Обычный урок
+                if (lessonIndex >= lessonItems.length) break;
+                const lesson = lessonItems[lessonIndex];
+                lessonIndex++;
+
                 const tag = lesson.name.includes('платная') ? '⭐ ДОП' :
                             lesson.name.includes('кружок') ? '🎯 КРУЖОК' : '';
-                const num = i + 1;
+                const num = lessonIndex;
 
-                // Проверяем, идёт ли этот урок сейчас
-                let isCurrent = false;
+                const isCurrent = (index === getTodayIndex() && i === currentIdx);
+                const isPast = (index === getTodayIndex() && i < currentIdx);
+
                 let progress = 0;
                 let timeLeftStr = '';
-                let isPast = false;
+                let timeRange = `${slot.start} – ${slot.end}`;
 
-                if (index === getTodayIndex() && i === currentIdx) {
-                    isCurrent = true;
-                    const startTime = bellSchedule[i].start;
-                    const endTime = bellSchedule[i].end;
-                    const total = getTimeDiff(endTime, new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0)) -
-                                 getTimeDiff(startTime, new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0));
-                    const elapsed = getTimeDiff(startTime, now);
+                if (isCurrent) {
+                    const total = getTimeDiff(slot.end, new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0)) -
+                                 getTimeDiff(slot.start, new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0));
+                    const elapsed = getTimeDiff(slot.start, now);
                     if (total > 0) {
                         progress = Math.min((elapsed / total) * 100, 100);
                     }
-                    const left = getTimeDiff(endTime, now);
+                    const left = getTimeDiff(slot.end, now);
                     if (left > 0) {
                         const mins = Math.floor(left / 60);
                         const secs = Math.floor(left % 60);
                         timeLeftStr = `${mins}мин ${secs}сек`;
-                    } else {
-                        timeLeftStr = '0мин';
                     }
-                } else if (index === getTodayIndex() && i < currentIdx) {
-                    isPast = true;
-                }
-
-                // Время урока
-                let timeRange = '';
-                if (bellSchedule[i]) {
-                    timeRange = `${bellSchedule[i].start} – ${bellSchedule[i].end}`;
                 }
 
                 const currentClass = isCurrent ? 'current-lesson' : '';
@@ -738,15 +806,16 @@
                         <div class="lesson-time">${isCurrent ? `⏳ ${timeLeftStr}` : timeRange}</div>
                     </div>
                 `;
-            });
+            }
 
             html += `</div>`;
             container.innerHTML = html;
 
-            lessonCountEl.textContent = `📚 ${day.lessons.length} уроков`;
+            const totalLessons = day.lessons.length;
+            lessonCountEl.textContent = `📚 ${totalLessons} уроков`;
 
             // Клик по уроку
-            document.querySelectorAll('.lesson-item').forEach(el => {
+            document.querySelectorAll('.lesson-item:not(.lunch)').forEach(el => {
                 el.addEventListener('click', function() {
                     const day = parseInt(this.dataset.day);
                     const idx = parseInt(this.dataset.idx);
@@ -789,7 +858,7 @@
         setDay(todayIndex);
 
         // ============================================================
-        // 6. СВАЙП (горизонтальный)
+        // 6. СВАЙП
         // ============================================================
         let touchStartX = 0;
         let touchStartY = 0;
@@ -887,7 +956,7 @@
         });
 
         // ============================================================
-        // 10. ПОГОДА (Open-Meteo)
+        // 10. ПОГОДА
         // ============================================================
         async function fetchWeather() {
             const weatherEl = document.getElementById('weatherDisplay');
@@ -963,7 +1032,7 @@
                 timerDisplay.innerHTML = `⏱️ Уроки закончились! <span class="time" style="color:#94a3b8">🎉</span>`;
             }
 
-            // Обновляем расписание каждые 30 секунд, чтобы обновить индикаторы
+            // Обновляем расписание каждые 30 секунд
             if (Math.floor(Date.now() / 30000) > Math.floor((Date.now() - 30000) / 30000)) {
                 renderDay(currentDay);
             }
