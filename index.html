@@ -259,7 +259,7 @@
         }
         .schedule-card { display: block; }
 
-        /* --- УРОКИ (компактная версия) --- */
+        /* --- УРОКИ --- */
         .lesson-item {
             border-radius: 10px;
             padding: 5px 8px;
@@ -579,13 +579,12 @@
 
     <script>
         // ============================================================
-        // 1. ДАННЫЕ
+        // 1. ДАННЫЕ РАСПИСАНИЯ
         // ============================================================
         const days = [{
             name: 'ПОНЕДЕЛЬНИК',
             isWeekend: false,
             lessons: [
-                { name: 'Занимательная математика (кружок)', icon: '🧮', cls: 'circle', tip: 'Играем в числа! Будет весело, как в квесте.' },
                 { name: 'Разговоры о важном', icon: '🗣️', cls: 'talk', tip: 'Говорим о дружбе и мечтах. Можно даже пофантазировать!' },
                 { name: 'Математика', icon: '📐', cls: 'math', tip: 'Чертим фигуры и считаем. Ты сможешь!' },
                 { name: 'Английский язык', icon: '🇬🇧', cls: 'eng', tip: 'Новые слова! Повторяй за учителем — будет классно.' },
@@ -622,7 +621,8 @@
                 { name: 'Русский язык', icon: '✍️', cls: 'rus', tip: 'Сочиняем историю. Кто твой главный герой?' },
                 { name: 'Физическая культура', icon: '🏃', cls: 'phys', tip: 'Спортивные игры — лови мяч и беги!' },
                 { name: 'Литературное чтение', icon: '📖', cls: 'lit', tip: 'Сказки разных народов. Узнай новое!' },
-                { name: 'Технология', icon: '🔧', cls: 'tech', tip: 'Лепим, клеим, мастерим. Твори как художник!' }
+                { name: 'Технология', icon: '🔧', cls: 'tech', tip: 'Лепим, клеим, мастерим. Твори как художник!' },
+                { name: 'Занимательная математика (кружок)', icon: '🧮', cls: 'circle', tip: 'Играем в числа! Будет весело, как в квесте.' }
             ]
         }, {
             name: 'ПЯТНИЦА',
@@ -655,9 +655,10 @@
         });
 
         // ============================================================
-        // 3. РАСПИСАНИЕ ЗВОНКОВ
+        // 3. РАСПИСАНИЕ ЗВОНКОВ (ДВА ВАРИАНТА)
         // ============================================================
-        const bellSchedule = [
+        // ПН, ВТ, ПТ — начало 13:30, 6 уроков
+        const bellScheduleMonTueFri = [
             { start: '13:30', end: '14:10', type: 'lesson' },
             { start: '14:20', end: '15:00', type: 'lesson' },
             { start: '15:20', end: '16:00', type: 'lesson' },
@@ -667,6 +668,26 @@
             { start: '18:00', end: '18:40', type: 'lesson' },
         ];
 
+        // СР, ЧТ — начало 12:40, 6 уроков
+        const bellScheduleWedThu = [
+            { start: '12:40', end: '13:20', type: 'lesson' },
+            { start: '13:30', end: '14:10', type: 'lesson' },
+            { start: '14:20', end: '15:00', type: 'lesson' },
+            { start: '15:20', end: '16:00', type: 'lesson' },
+            { start: '16:00', end: '16:20', type: 'lunch' },
+            { start: '16:20', end: '17:00', type: 'lesson' },
+            { start: '17:10', end: '17:50', type: 'lesson' },
+        ];
+
+        // Функция выбора расписания звонков для конкретного дня
+        function getScheduleForDay(dayIndex) {
+            // dayIndex: 0=ПН, 1=ВТ, 2=СР, 3=ЧТ, 4=ПТ
+            if (dayIndex === 2 || dayIndex === 3) {
+                return bellScheduleWedThu;
+            }
+            return bellScheduleMonTueFri;
+        }
+
         // ============================================================
         // 4. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
         // ============================================================
@@ -674,22 +695,23 @@
             const today = new Date().getDay();
             const weekdays = [1,2,3,4,5,6,0];
             let idx = weekdays.indexOf(today);
-            return idx; // 0-6
+            return idx;
         }
 
-        function getCurrentLessonIndex() {
+        function getCurrentLessonIndex(dayIndex) {
             const now = new Date();
             const h = now.getHours().toString().padStart(2, '0');
             const m = now.getMinutes().toString().padStart(2, '0');
             const timeStr = h + ':' + m;
+            const schedule = getScheduleForDay(dayIndex);
             let currentIdx = -1;
             let nextIdx = -1;
-            for (let i = 0; i < bellSchedule.length; i++) {
-                const s = bellSchedule[i].start;
-                const e = bellSchedule[i].end;
+            for (let i = 0; i < schedule.length; i++) {
+                const s = schedule[i].start;
+                const e = schedule[i].end;
                 if (timeStr >= s && timeStr < e) {
                     currentIdx = i;
-                    nextIdx = (i + 1 < bellSchedule.length) ? i + 1 : -1;
+                    nextIdx = (i + 1 < schedule.length) ? i + 1 : -1;
                     break;
                 }
                 if (timeStr < s) {
@@ -701,16 +723,11 @@
         }
 
         function getTimeDiff(targetTimeStr, now) {
-            // Теперь возвращает разницу в секундах, учитывая, что targetTimeStr может быть завтра
             const parts = targetTimeStr.split(':');
             const target = new Date(now);
             target.setHours(parseInt(parts[0]), parseInt(parts[1]), 0);
-
             let diff = (target - now) / 1000;
-            if (diff < 0) {
-                // Если время уже прошло сегодня, добавляем сутки
-                diff += 86400;
-            }
+            if (diff < 0) diff += 86400;
             return diff;
         }
 
@@ -720,13 +737,11 @@
             const hours = Math.floor((seconds % 86400) / 3600);
             const minutes = Math.floor((seconds % 3600) / 60);
             const secs = Math.floor(seconds % 60);
-
             let parts = [];
             if (days > 0) parts.push(days + 'д');
             if (hours > 0 || days > 0) parts.push(String(hours).padStart(2, '0') + 'ч');
             if (minutes > 0 || hours > 0 || days > 0) parts.push(String(minutes).padStart(2, '0') + 'м');
             parts.push(String(secs).padStart(2, '0') + 'с');
-
             return parts.join(' ');
         }
 
@@ -744,16 +759,16 @@
         function renderSchedule() {
             const dayIndex = currentDay;
             const day = days[dayIndex];
-            const { currentIdx, nextIdx } = getCurrentLessonIndex();
+            const schedule = getScheduleForDay(dayIndex);
+            const { currentIdx, nextIdx } = getCurrentLessonIndex(dayIndex);
             const now = new Date();
             const todayIdx = getTodayIndex();
             const isToday = (dayIndex === todayIdx);
 
-            // --- ОБНОВЛЯЕМ ТАЙМЕР (СВЕРХУ) ---
+            // --- ОБНОВЛЯЕМ ТАЙМЕР СВЕРХУ ---
             if (isToday && !day.isWeekend) {
-                // Сегодня и не выходной
                 if (currentIdx !== -1) {
-                    const endTime = bellSchedule[currentIdx].end;
+                    const endTime = schedule[currentIdx].end;
                     const diff = getTimeDiff(endTime, now);
                     if (diff > 0) {
                         timerEl.textContent = formatTimeSmart(diff);
@@ -765,7 +780,7 @@
                         timerDisplay.innerHTML = `⏱️ До звонка: <span class="time" style="color:#f43f5e">0с</span>`;
                     }
                 } else if (nextIdx !== -1) {
-                    const startTime = bellSchedule[nextIdx].start;
+                    const startTime = schedule[nextIdx].start;
                     const diff = getTimeDiff(startTime, now);
                     if (diff > 0) {
                         timerEl.textContent = formatTimeSmart(diff);
@@ -786,14 +801,13 @@
                 timerEl.style.color = '#94a3b8';
                 timerDisplay.innerHTML = `⏱️ Выходные! <span class="time" style="color:#94a3b8">🎉</span>`;
             } else {
-                // Выбран не сегодняшний день
                 timerEl.textContent = '';
                 timerDisplay.innerHTML = `📅 Расписание на ${day.name}`;
             }
 
             // --- ОБНОВЛЯЕМ РАСПИСАНИЕ ---
             if (dayIndex === renderedDay && !day.isWeekend && isToday) {
-                updateDynamicElements(currentIdx, now);
+                updateDynamicElements(currentIdx, now, schedule);
                 return;
             }
 
@@ -822,9 +836,9 @@
             // --- БУДНИ ---
             let html = '';
 
-            // --- СЕЙЧАС ПЕРЕМЕНА ИЛИ ОБЕД (только если сегодня) ---
+            // Перемена или обед (только сегодня)
             if (isToday && currentIdx === -1 && nextIdx !== -1) {
-                const nextLesson = bellSchedule[nextIdx];
+                const nextLesson = schedule[nextIdx];
                 const timeLeft = getTimeDiff(nextLesson.start, now);
                 const isLunch = nextLesson.type === 'lunch';
                 const icon = isLunch ? '🍔' : '⌛';
@@ -842,81 +856,103 @@
                 `;
             }
 
-            // --- РИСУЕМ УРОКИ С РАЗДЕЛЕНИЕМ ДО/ПОСЛЕ ОБЕДА ---
+            // --- РИСУЕМ УРОКИ ---
+            // Определяем, где обед в расписании
+            const lunchSlotIndex = schedule.findIndex(s => s.type === 'lunch');
+
             let lessonIndex = 0;
-            const beforeLunchLessons = [];
-            const afterLunchLessons = [];
+            let beforeLunchRendered = false;
+            let afterLunchRendered = false;
+            let lunchRendered = false;
 
-            for (let i = 0; i < bellSchedule.length; i++) {
-                const slot = bellSchedule[i];
-                if (slot.type === 'lunch') continue;
-                if (lessonIndex >= day.lessons.length) break;
+            for (let i = 0; i < schedule.length; i++) {
+                const slot = schedule[i];
+
+                // Если это обед
+                if (slot.type === 'lunch') {
+                    const isCurrent = (isToday && i === currentIdx);
+                    const timeRange = `${slot.start} – ${slot.end}`;
+                    let progress = 0;
+                    let timeLeftStr = '';
+                    if (isCurrent) {
+                        const total = getTimeDiff(slot.end, new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0)) -
+                                     getTimeDiff(slot.start, new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0));
+                        const elapsed = getTimeDiff(slot.start, now);
+                        if (total > 0) progress = Math.min((elapsed / total) * 100, 100);
+                        const left = getTimeDiff(slot.end, now);
+                        if (left > 0) timeLeftStr = formatTimeSmart(left);
+                    }
+                    const currentClass = isCurrent ? 'current-lesson lunch' : '';
+                    const progressBar = isCurrent ? `<div class="lesson-progress" style="width: ${progress}%;"></div>` : '';
+                    html += `
+                        <div class="section-divider">🍔 Обед</div>
+                        <div class="lesson-item lunch ${currentClass}" style="${isCurrent ? 'border-color: #f59e0b !important;' : ''}">
+                            ${progressBar}
+                            <div class="lesson-number">🍔</div>
+                            <div class="lesson-icon">🍽️</div>
+                            <div class="lesson-info">
+                                <div class="lesson-name">🍔 Обед! Вкуснятина!</div>
+                                <div class="lesson-sub">${isCurrent ? 'Едим и отдыхаем' : 'Время обеда'}</div>
+                            </div>
+                            <div class="lesson-time">${isCurrent ? `⏳ ${timeLeftStr}` : timeRange}</div>
+                        </div>
+                    `;
+                    lunchRendered = true;
+                    continue;
+                }
+
+                // Если это урок
+                if (lessonIndex >= day.lessons.length) continue;
                 const lesson = day.lessons[lessonIndex];
+                const lessonRealIndex = lessonIndex;
                 lessonIndex++;
-                if (i < 3) {
-                    beforeLunchLessons.push({ slot, lesson, index: i });
-                } else {
-                    afterLunchLessons.push({ slot, lesson, index: i });
+
+                // Разделители до/после обеда
+                if (!beforeLunchRendered && lunchSlotIndex !== -1 && i < lunchSlotIndex) {
+                    html += `<div class="section-divider">🍳 До обеда</div>`;
+                    beforeLunchRendered = true;
                 }
-            }
-
-            lessonIndex = 0;
-
-            // --- ДО ОБЕДА ---
-            if (beforeLunchLessons.length > 0) {
-                html += `<div class="section-divider">🍳 До обеда</div>`;
-                for (const item of beforeLunchLessons) {
-                    html += renderLesson(item.lesson, item.slot, item.index, dayIndex, lessonIndex, currentIdx, now, isToday);
-                    lessonIndex++;
+                if (!afterLunchRendered && lunchRendered && i > lunchSlotIndex) {
+                    html += `<div class="section-divider">🌙 После обеда</div>`;
+                    afterLunchRendered = true;
                 }
-            }
 
-            // --- ОБЕД ---
-            const lunchSlot = bellSchedule.find(s => s.type === 'lunch');
-            if (lunchSlot) {
-                const isCurrent = (isToday && bellSchedule.indexOf(lunchSlot) === currentIdx);
-                const timeRange = `${lunchSlot.start} – ${lunchSlot.end}`;
+                const tag = lesson.name.includes('платная') ? '⭐ ДОП' :
+                            lesson.name.includes('кружок') ? '🎯 КРУЖОК' : '';
+                const num = lessonIndex;
 
+                const isCurrent = (isToday && i === currentIdx);
                 let progress = 0;
                 let timeLeftStr = '';
+                const timeRange = `${slot.start} – ${slot.end}`;
+
                 if (isCurrent) {
-                    const total = getTimeDiff(lunchSlot.end, new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0)) -
-                                 getTimeDiff(lunchSlot.start, new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0));
-                    const elapsed = getTimeDiff(lunchSlot.start, now);
-                    if (total > 0) {
-                        progress = Math.min((elapsed / total) * 100, 100);
-                    }
-                    const left = getTimeDiff(lunchSlot.end, now);
-                    if (left > 0) {
-                        timeLeftStr = formatTimeSmart(left);
-                    }
+                    const total = getTimeDiff(slot.end, new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0)) -
+                                 getTimeDiff(slot.start, new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0));
+                    const elapsed = getTimeDiff(slot.start, now);
+                    if (total > 0) progress = Math.min((elapsed / total) * 100, 100);
+                    const left = getTimeDiff(slot.end, now);
+                    if (left > 0) timeLeftStr = formatTimeSmart(left);
                 }
 
-                const currentClass = isCurrent ? 'current-lesson lunch' : '';
+                const currentClass = isCurrent ? 'current-lesson' : '';
                 const progressBar = isCurrent ? `<div class="lesson-progress" style="width: ${progress}%;"></div>` : '';
 
                 html += `
-                    <div class="section-divider">🍔 Обед</div>
-                    <div class="lesson-item lunch ${currentClass}" style="${isCurrent ? 'border-color: #f59e0b !important;' : ''}">
+                    <div class="lesson-item ${lesson.cls} ${currentClass}" 
+                         data-day="${dayIndex}" 
+                         data-lesson-index="${lessonRealIndex}" 
+                         style="${isCurrent ? 'border-color: #22c55e !important;' : ''}">
                         ${progressBar}
-                        <div class="lesson-number">🍔</div>
-                        <div class="lesson-icon">🍽️</div>
+                        <div class="lesson-number">${num}</div>
+                        <div class="lesson-icon">${lesson.icon}</div>
                         <div class="lesson-info">
-                            <div class="lesson-name">🍔 Обед! Вкуснятина!</div>
-                            <div class="lesson-sub">${isCurrent ? 'Едим и отдыхаем' : 'Время обеда'}</div>
+                            <div class="lesson-name">${lesson.name} ${isCurrent ? '▶️' : ''}</div>
+                            ${tag ? `<div class="lesson-sub">${tag}</div>` : ''}
                         </div>
                         <div class="lesson-time">${isCurrent ? `⏳ ${timeLeftStr}` : timeRange}</div>
                     </div>
                 `;
-            }
-
-            // --- ПОСЛЕ ОБЕДА ---
-            if (afterLunchLessons.length > 0) {
-                html += `<div class="section-divider">🌙 После обеда</div>`;
-                for (const item of afterLunchLessons) {
-                    html += renderLesson(item.lesson, item.slot, item.index, dayIndex, lessonIndex, currentIdx, now, isToday);
-                    lessonIndex++;
-                }
             }
 
             container.innerHTML = html;
@@ -939,64 +975,17 @@
         }
 
         // ============================================================
-        // 6. ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ ДЛЯ ОТРИСОВКИ УРОКА
+        // 6. ОБНОВЛЕНИЕ ДИНАМИЧЕСКИХ ЭЛЕМЕНТОВ
         // ============================================================
-        function renderLesson(lesson, slot, slotIndex, dayIndex, lessonIndex, currentIdx, now, isToday) {
-            const tag = lesson.name.includes('платная') ? '⭐ ДОП' :
-                        lesson.name.includes('кружок') ? '🎯 КРУЖОК' : '';
-            const num = lessonIndex + 1;
-
-            const isCurrent = (isToday && slotIndex === currentIdx);
-
-            let progress = 0;
-            let timeLeftStr = '';
-            const timeRange = `${slot.start} – ${slot.end}`;
-
-            if (isCurrent) {
-                const total = getTimeDiff(slot.end, new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0)) -
-                             getTimeDiff(slot.start, new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0));
-                const elapsed = getTimeDiff(slot.start, now);
-                if (total > 0) {
-                    progress = Math.min((elapsed / total) * 100, 100);
-                }
-                const left = getTimeDiff(slot.end, now);
-                if (left > 0) {
-                    timeLeftStr = formatTimeSmart(left);
-                }
-            }
-
-            const currentClass = isCurrent ? 'current-lesson' : '';
-            const progressBar = isCurrent ? `<div class="lesson-progress" style="width: ${progress}%;"></div>` : '';
-
-            return `
-                <div class="lesson-item ${lesson.cls} ${currentClass}" 
-                     data-day="${dayIndex}" 
-                     data-lesson-index="${lessonIndex}" 
-                     style="${isCurrent ? 'border-color: #22c55e !important;' : ''}">
-                    ${progressBar}
-                    <div class="lesson-number">${num}</div>
-                    <div class="lesson-icon">${lesson.icon}</div>
-                    <div class="lesson-info">
-                        <div class="lesson-name">${lesson.name} ${isCurrent ? '▶️' : ''}</div>
-                        ${tag ? `<div class="lesson-sub">${tag}</div>` : ''}
-                    </div>
-                    <div class="lesson-time">${isCurrent ? `⏳ ${timeLeftStr}` : timeRange}</div>
-                </div>
-            `;
-        }
-
-        // ============================================================
-        // 7. ОБНОВЛЕНИЕ ДИНАМИЧЕСКИХ ЭЛЕМЕНТОВ (БЕЗ МИГАНИЙ)
-        // ============================================================
-        function updateDynamicElements(currentIdx, now) {
+        function updateDynamicElements(currentIdx, now, schedule) {
             const isToday = (currentDay === getTodayIndex());
             if (!isToday) return;
 
             const items = container.querySelectorAll('.lesson-item');
             let currentItemIdx = 0;
 
-            for (let i = 0; i < bellSchedule.length; i++) {
-                const slot = bellSchedule[i];
+            for (let i = 0; i < schedule.length; i++) {
+                const slot = schedule[i];
                 if (slot.type === 'lunch') {
                     if (currentItemIdx < items.length) {
                         const el = items[currentItemIdx];
@@ -1014,11 +1003,8 @@
                             const timeEl = el.querySelector('.lesson-time');
                             if (timeEl) {
                                 const left = getTimeDiff(slot.end, now);
-                                if (left > 0) {
-                                    timeEl.textContent = `⏳ ${formatTimeSmart(left)}`;
-                                } else {
-                                    timeEl.textContent = '⏳ 0с';
-                                }
+                                if (left > 0) timeEl.textContent = `⏳ ${formatTimeSmart(left)}`;
+                                else timeEl.textContent = '⏳ 0с';
                             }
                         }
                         currentItemIdx++;
@@ -1042,11 +1028,8 @@
                         const timeEl = el.querySelector('.lesson-time');
                         if (timeEl) {
                             const left = getTimeDiff(slot.end, now);
-                            if (left > 0) {
-                                timeEl.textContent = `⏳ ${formatTimeSmart(left)}`;
-                            } else {
-                                timeEl.textContent = '⏳ 0с';
-                            }
+                            if (left > 0) timeEl.textContent = `⏳ ${formatTimeSmart(left)}`;
+                            else timeEl.textContent = '⏳ 0с';
                         }
                     }
                     currentItemIdx++;
@@ -1055,7 +1038,7 @@
         }
 
         // ============================================================
-        // 8. ДАННЫЕ ДЛЯ ВЫХОДНЫХ
+        // 7. ДАННЫЕ ДЛЯ ВЫХОДНЫХ
         // ============================================================
         function getWeekendData(dayIndex) {
             if (dayIndex === 5) {
@@ -1074,7 +1057,7 @@
         }
 
         // ============================================================
-        // 9. ПЕРЕКЛЮЧЕНИЕ ДНЕЙ
+        // 8. ПЕРЕКЛЮЧЕНИЕ ДНЕЙ
         // ============================================================
         const dayBtns = document.querySelectorAll('.day-btn');
 
@@ -1095,7 +1078,7 @@
         setDay(todayIndex >= 0 && todayIndex <= 6 ? todayIndex : 0);
 
         // ============================================================
-        // 10. СВАЙП (горизонтальный)
+        // 9. СВАЙП
         // ============================================================
         let touchStartX = 0;
         let touchStartY = 0;
@@ -1130,7 +1113,7 @@
         }, { passive: true });
 
         // ============================================================
-        // 11. ТЕМА
+        // 10. ТЕМА
         // ============================================================
         const themeBtn = document.getElementById('themeToggle');
         let isLight = true;
@@ -1155,7 +1138,7 @@
         });
 
         // ============================================================
-        // 12. ПОЛНЫЙ ЭКРАН
+        // 11. ПОЛНЫЙ ЭКРАН
         // ============================================================
         const fsBtn = document.getElementById('fullscreenToggle');
 
@@ -1178,7 +1161,7 @@
         document.addEventListener('fullscreenchange', updateFullscreenButton);
 
         // ============================================================
-        // 13. ПОДЕЛИТЬСЯ
+        // 12. ПОДЕЛИТЬСЯ
         // ============================================================
         document.getElementById('shareBtn').addEventListener('click', () => {
             const url = window.location.href;
@@ -1201,7 +1184,7 @@
         });
 
         // ============================================================
-        // 14. ПОГОДА
+        // 13. ПОГОДА
         // ============================================================
         async function fetchWeather() {
             const weatherEl = document.getElementById('weatherDisplay');
@@ -1227,14 +1210,14 @@
         setInterval(fetchWeather, 600000);
 
         // ============================================================
-        // 15. ЗАПУСК ОБНОВЛЕНИЙ
+        // 14. ЗАПУСК ОБНОВЛЕНИЙ
         // ============================================================
         setInterval(() => {
             renderSchedule();
         }, 1000);
 
         // ============================================================
-        // 16. PULL-TO-REFRESH
+        // 15. PULL-TO-REFRESH
         // ============================================================
         let pullStartY2 = 0;
         let pullOffset2 = 0;
@@ -1277,17 +1260,15 @@
         }, { passive: true });
 
         // ============================================================
-        // 17. ЭКСПОРТ В PDF
+        // 16. ЭКСПОРТ В PDF
         // ============================================================
         document.getElementById('exportPdf').addEventListener('click', function() {
-            // Создаём временный контейнер для всего расписания
             const fullSchedule = document.createElement('div');
             fullSchedule.style.padding = '20px';
             fullSchedule.style.fontFamily = "'Segoe UI', system-ui, sans-serif";
             fullSchedule.style.color = '#0f172a';
             fullSchedule.style.background = '#ffffff';
 
-            // Шапка
             const header = document.createElement('div');
             header.style.textAlign = 'center';
             header.style.marginBottom = '20px';
@@ -1300,7 +1281,6 @@
             `;
             fullSchedule.appendChild(header);
 
-            // Проходим по всем дням
             for (let d = 0; d < days.length; d++) {
                 const day = days[d];
                 const dayDiv = document.createElement('div');
@@ -1330,47 +1310,41 @@
                     continue;
                 }
 
-                if (day.lessons.length === 0) {
-                    const noLessons = document.createElement('div');
-                    noLessons.style.textAlign = 'center';
-                    noLessons.style.padding = '10px';
-                    noLessons.style.color = '#94a3b8';
-                    noLessons.innerHTML = 'Нет уроков';
-                    dayDiv.appendChild(noLessons);
-                    fullSchedule.appendChild(dayDiv);
-                    continue;
-                }
-
-                // До обеда
-                const beforeDiv = document.createElement('div');
-                beforeDiv.style.marginBottom = '8px';
-                beforeDiv.style.fontSize = '12px';
-                beforeDiv.style.fontWeight = '600';
-                beforeDiv.style.color = '#64748b';
-                beforeDiv.textContent = '🍳 До обеда';
-                dayDiv.appendChild(beforeDiv);
+                const schedule = getScheduleForDay(d);
+                const lunchSlot = schedule.find(s => s.type === 'lunch');
 
                 let lessonCount = 0;
-                for (let i = 0; i < 3 && lessonCount < day.lessons.length; i++) {
-                    const lesson = day.lessons[lessonCount];
-                    const slot = bellSchedule[i];
-                    if (slot.type === 'lunch') continue;
-                    const lessonRow = document.createElement('div');
-                    lessonRow.style.display = 'flex';
-                    lessonRow.style.justifyContent = 'space-between';
-                    lessonRow.style.padding = '4px 0';
-                    lessonRow.style.borderBottom = '1px solid #e2e8f0';
-                    lessonRow.style.fontSize = '13px';
-                    lessonRow.innerHTML = `
-                        <span><strong>${lessonCount+1}.</strong> ${lesson.icon} ${lesson.name}</span>
-                        <span style="color: #64748b;">${slot.start} – ${slot.end}</span>
-                    `;
-                    dayDiv.appendChild(lessonRow);
-                    lessonCount++;
+                // До обеда
+                if (lunchSlot) {
+                    const beforeDiv = document.createElement('div');
+                    beforeDiv.style.marginBottom = '8px';
+                    beforeDiv.style.fontSize = '12px';
+                    beforeDiv.style.fontWeight = '600';
+                    beforeDiv.style.color = '#64748b';
+                    beforeDiv.textContent = '🍳 До обеда';
+                    dayDiv.appendChild(beforeDiv);
+
+                    for (let i = 0; i < schedule.length; i++) {
+                        if (schedule[i].type === 'lunch') break;
+                        if (lessonCount >= day.lessons.length) break;
+                        const lesson = day.lessons[lessonCount];
+                        const slot = schedule[i];
+                        const lessonRow = document.createElement('div');
+                        lessonRow.style.display = 'flex';
+                        lessonRow.style.justifyContent = 'space-between';
+                        lessonRow.style.padding = '4px 0';
+                        lessonRow.style.borderBottom = '1px solid #e2e8f0';
+                        lessonRow.style.fontSize = '13px';
+                        lessonRow.innerHTML = `
+                            <span><strong>${lessonCount+1}.</strong> ${lesson.icon} ${lesson.name}</span>
+                            <span style="color: #64748b;">${slot.start} – ${slot.end}</span>
+                        `;
+                        dayDiv.appendChild(lessonRow);
+                        lessonCount++;
+                    }
                 }
 
                 // Обед
-                const lunchSlot = bellSchedule.find(s => s.type === 'lunch');
                 if (lunchSlot) {
                     const lunchDiv = document.createElement('div');
                     lunchDiv.style.margin = '8px 0';
@@ -1382,40 +1356,38 @@
                     lunchDiv.style.color = '#92400e';
                     lunchDiv.innerHTML = `🍔 Обед (${lunchSlot.start} – ${lunchSlot.end})`;
                     dayDiv.appendChild(lunchDiv);
-                }
 
-                // После обеда
-                const afterDiv = document.createElement('div');
-                afterDiv.style.marginTop = '8px';
-                afterDiv.style.marginBottom = '8px';
-                afterDiv.style.fontSize = '12px';
-                afterDiv.style.fontWeight = '600';
-                afterDiv.style.color = '#64748b';
-                afterDiv.textContent = '🌙 После обеда';
-                dayDiv.appendChild(afterDiv);
+                    const afterDiv = document.createElement('div');
+                    afterDiv.style.marginTop = '8px';
+                    afterDiv.style.marginBottom = '8px';
+                    afterDiv.style.fontSize = '12px';
+                    afterDiv.style.fontWeight = '600';
+                    afterDiv.style.color = '#64748b';
+                    afterDiv.textContent = '🌙 После обеда';
+                    dayDiv.appendChild(afterDiv);
 
-                for (let i = 4; i < bellSchedule.length && lessonCount < day.lessons.length; i++) {
-                    const lesson = day.lessons[lessonCount];
-                    const slot = bellSchedule[i];
-                    if (slot.type === 'lunch') continue;
-                    const lessonRow = document.createElement('div');
-                    lessonRow.style.display = 'flex';
-                    lessonRow.style.justifyContent = 'space-between';
-                    lessonRow.style.padding = '4px 0';
-                    lessonRow.style.borderBottom = '1px solid #e2e8f0';
-                    lessonRow.style.fontSize = '13px';
-                    lessonRow.innerHTML = `
-                        <span><strong>${lessonCount+1}.</strong> ${lesson.icon} ${lesson.name}</span>
-                        <span style="color: #64748b;">${slot.start} – ${slot.end}</span>
-                    `;
-                    dayDiv.appendChild(lessonRow);
-                    lessonCount++;
+                    for (let i = schedule.indexOf(lunchSlot) + 1; i < schedule.length; i++) {
+                        if (lessonCount >= day.lessons.length) break;
+                        const lesson = day.lessons[lessonCount];
+                        const slot = schedule[i];
+                        const lessonRow = document.createElement('div');
+                        lessonRow.style.display = 'flex';
+                        lessonRow.style.justifyContent = 'space-between';
+                        lessonRow.style.padding = '4px 0';
+                        lessonRow.style.borderBottom = '1px solid #e2e8f0';
+                        lessonRow.style.fontSize = '13px';
+                        lessonRow.innerHTML = `
+                            <span><strong>${lessonCount+1}.</strong> ${lesson.icon} ${lesson.name}</span>
+                            <span style="color: #64748b;">${slot.start} – ${slot.end}</span>
+                        `;
+                        dayDiv.appendChild(lessonRow);
+                        lessonCount++;
+                    }
                 }
 
                 fullSchedule.appendChild(dayDiv);
             }
 
-            // Подвал
             const footer = document.createElement('div');
             footer.style.textAlign = 'center';
             footer.style.marginTop = '20px';
@@ -1426,7 +1398,6 @@
             footer.innerHTML = '✨ Сделано с любовью для 2Б класса! ✨<br>Не опаздывай на уроки! 🚀';
             fullSchedule.appendChild(footer);
 
-            // Вставляем в контейнер для PDF
             const tempContainer = document.createElement('div');
             tempContainer.appendChild(fullSchedule);
             document.body.appendChild(tempContainer);
